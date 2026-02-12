@@ -86,6 +86,7 @@ export function TaskCreate({ projectId }: TaskCreateProps) {
     return (
       <button
         onClick={() => setIsOpen(true)}
+        data-add-task
         className="flex items-center gap-2 w-full px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-xl transition-all group"
       >
         <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 border-dashed border-muted-foreground/50 group-hover:border-primary transition-colors">
