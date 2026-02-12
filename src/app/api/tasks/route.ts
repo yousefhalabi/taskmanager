@@ -30,13 +30,23 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { title, description, dueDate, priority, projectId, labelIds } = body
-    
+
+    // Validate project exists if projectId is provided
+    if (projectId) {
+      const project = await db.project.findUnique({
+        where: { id: projectId }
+      })
+      if (!project) {
+        return NextResponse.json({ error: 'Project not found' }, { status: 400 })
+      }
+    }
+
     // Get the max order for tasks in this project or inbox
     const maxOrder = await db.task.aggregate({
       where: projectId ? { projectId } : { projectId: null },
       _max: { order: true }
     })
-    
+
     const task = await db.task.create({
       data: {
         title,
@@ -59,7 +69,7 @@ export async function POST(request: NextRequest) {
         }
       }
     })
-    
+
     return NextResponse.json({
       ...task,
       labels: task.labels.map(tl => tl.label)
