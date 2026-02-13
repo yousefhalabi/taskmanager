@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/popover'
 import { Calendar as CalendarComponent } from '@/components/ui/calendar'
 import { useTaskStore } from '@/store/task-store'
+import { useToast } from '@/hooks/use-toast'
 
 interface TaskItemProps {
   task: Task
@@ -55,16 +56,25 @@ const priorityBgColors: Record<Priority, string> = {
 
 export function TaskItem({ task, onEdit }: TaskItemProps) {
   const { toggleTaskComplete, deleteTask, updateTask } = useTaskStore()
+  const { toast } = useToast()
   const [showCalendar, setShowCalendar] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [addDatePickerOpen, setAddDatePickerOpen] = useState(false)
 
   const handleToggleComplete = async () => {
+    const newCompletedState = !task.completed
     toggleTaskComplete(task.id)
     try {
       await fetch(`/api/tasks/${task.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ completed: !task.completed }),
+        body: JSON.stringify({ completed: newCompletedState }),
+      })
+      toast({
+        title: newCompletedState ? 'Task completed' : 'Task uncompleted',
+        description: newCompletedState
+          ? `"${task.title}" marked as done.`
+          : `"${task.title}" marked as incomplete.`,
       })
     } catch (error) {
       console.error('Failed to toggle task:', error)
@@ -72,10 +82,15 @@ export function TaskItem({ task, onEdit }: TaskItemProps) {
   }
 
   const handleDelete = async () => {
+    const taskTitle = task.title
     deleteTask(task.id)
     setShowDeleteDialog(false)
     try {
       await fetch(`/api/tasks/${task.id}`, { method: 'DELETE' })
+      toast({
+        title: 'Task deleted',
+        description: `"${taskTitle}" has been removed.`,
+      })
     } catch (error) {
       console.error('Failed to delete task:', error)
     }
@@ -218,7 +233,7 @@ export function TaskItem({ task, onEdit }: TaskItemProps) {
       
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         {!task.dueDate && (
-          <Popover>
+          <Popover open={addDatePickerOpen} onOpenChange={setAddDatePickerOpen}>
             <PopoverTrigger asChild>
               <Button variant="ghost" size="icon" className="h-7 w-7">
                 <Calendar className="h-4 w-4" />
@@ -228,7 +243,10 @@ export function TaskItem({ task, onEdit }: TaskItemProps) {
               <CalendarComponent
                 mode="single"
                 selected={dueDate}
-                onSelect={handleDateChange}
+                onSelect={(date) => {
+                  handleDateChange(date)
+                  setAddDatePickerOpen(false)
+                }}
                 initialFocus
               />
             </PopoverContent>

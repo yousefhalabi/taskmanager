@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Plus, X, Calendar, Flag, Tag, FolderOpen } from 'lucide-react'
 import { useTaskStore, Priority } from '@/store/task-store'
+import { useToast } from '@/hooks/use-toast'
 import {
   Popover,
   PopoverContent,
@@ -40,8 +41,10 @@ export function TaskCreate({ projectId }: TaskCreateProps) {
   const [dueDate, setDueDate] = useState<Date | undefined>()
   const [priority, setPriority] = useState<Priority>('NONE')
   const [isLoading, setIsLoading] = useState(false)
-  
+  const [datePickerOpen, setDatePickerOpen] = useState(false)
+
   const { addTask, projects, selectedProjectId } = useTaskStore()
+  const { toast } = useToast()
   const currentProjectId = projectId || selectedProjectId
   const currentProject = projects.find(p => p.id === currentProjectId)
 
@@ -66,6 +69,10 @@ export function TaskCreate({ projectId }: TaskCreateProps) {
         const task = await res.json()
         addTask(task)
         resetForm()
+        toast({
+          title: 'Task created',
+          description: `"${task.title}" has been added to your list.`,
+        })
       }
     } catch (error) {
       console.error('Failed to create task:', error)
@@ -127,7 +134,7 @@ export function TaskCreate({ projectId }: TaskCreateProps) {
           )}
           
           {/* Due Date */}
-          <Popover>
+          <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm" className="h-7 text-xs">
                 <Calendar className="h-3 w-3 mr-1" />
@@ -138,7 +145,10 @@ export function TaskCreate({ projectId }: TaskCreateProps) {
               <CalendarComponent
                 mode="single"
                 selected={dueDate}
-                onSelect={setDueDate}
+                onSelect={(date) => {
+                  setDueDate(date)
+                  setDatePickerOpen(false)
+                }}
                 initialFocus
               />
             </PopoverContent>

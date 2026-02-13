@@ -24,6 +24,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Calendar, Flag, Tag, Search, X } from 'lucide-react'
 import { Priority } from '@/store/task-store'
 import { format } from 'date-fns'
+import { useToast } from '@/hooks/use-toast'
 import {
   DndContext,
   closestCenter,
@@ -91,6 +92,7 @@ function SortableTaskItem({ task, onEdit }: SortableTaskItemProps) {
 
 export function TaskList() {
   const { tasks, currentView, selectedProjectId, updateTask, deleteTask, setTasks, searchQuery, setSearchQuery, priorityFilter, setPriorityFilter } = useTaskStore()
+  const { toast } = useToast()
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editDescription, setEditDescription] = useState('')
@@ -135,7 +137,7 @@ export function TaskList() {
 
   const handleSaveEdit = async () => {
     if (!editingTask) return
-    
+
     try {
       const res = await fetch(`/api/tasks/${editingTask.id}`, {
         method: 'PATCH',
@@ -147,7 +149,7 @@ export function TaskList() {
           priority: editPriority,
         }),
       })
-      
+
       if (res.ok) {
         updateTask(editingTask.id, {
           title: editTitle,
@@ -156,6 +158,10 @@ export function TaskList() {
           priority: editPriority,
         })
         setEditingTask(null)
+        toast({
+          title: 'Task updated',
+          description: `"${editTitle}" has been updated.`,
+        })
       }
     } catch (error) {
       console.error('Failed to update task:', error)
