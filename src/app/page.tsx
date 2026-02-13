@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Menu, Sun, Moon, Inbox, Calendar, CalendarDays, CheckCircle2, FolderOpen, TrendingUp, Clock, ListTodo, Plus } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { cn } from '@/lib/utils'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet'
 import { Progress } from '@/components/ui/progress'
 import { Card, CardContent } from '@/components/ui/card'
 import { isToday, isFuture, isPast, startOfWeek, endOfWeek, eachDayOfInterval, format } from 'date-fns'
@@ -132,6 +132,10 @@ export default function Home() {
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="p-0 w-72">
+                  <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+                  <SheetDescription className="sr-only">
+                    Navigate between different views and projects in TaskFlow
+                  </SheetDescription>
                   <AppSidebar onNavigate={() => setMobileSidebarOpen(false)} />
                 </SheetContent>
               </Sheet>
