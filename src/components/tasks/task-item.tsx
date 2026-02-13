@@ -15,6 +15,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -46,6 +56,7 @@ const priorityBgColors: Record<Priority, string> = {
 export function TaskItem({ task, onEdit }: TaskItemProps) {
   const { toggleTaskComplete, deleteTask, updateTask } = useTaskStore()
   const [showCalendar, setShowCalendar] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
   const handleToggleComplete = async () => {
     toggleTaskComplete(task.id)
@@ -62,6 +73,7 @@ export function TaskItem({ task, onEdit }: TaskItemProps) {
 
   const handleDelete = async () => {
     deleteTask(task.id)
+    setShowDeleteDialog(false)
     try {
       await fetch(`/api/tasks/${task.id}`, { method: 'DELETE' })
     } catch (error) {
@@ -109,6 +121,7 @@ export function TaskItem({ task, onEdit }: TaskItemProps) {
   const isOverdue = dueDate && isPast(dueDate) && !isToday(dueDate) && !task.completed
 
   return (
+    <>
     <div
       className={cn(
         "group flex items-start gap-3 p-4 rounded-xl transition-all",
@@ -255,7 +268,7 @@ export function TaskItem({ task, onEdit }: TaskItemProps) {
             </DropdownMenuItem>
             <DropdownMenuItem
               className="text-destructive"
-              onClick={handleDelete}
+              onClick={() => setShowDeleteDialog(true)}
             >
               <Trash2 className="h-4 w-4 mr-2" />
               Delete
@@ -264,5 +277,23 @@ export function TaskItem({ task, onEdit }: TaskItemProps) {
         </DropdownMenu>
       </div>
     </div>
+
+    <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete task?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This will permanently delete "{task.title}". This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   )
 }
