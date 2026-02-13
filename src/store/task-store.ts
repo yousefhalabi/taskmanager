@@ -44,25 +44,29 @@ interface TaskState {
   selectedProjectId: string | null
   sidebarOpen: boolean
   isLoading: boolean
-  
+  searchQuery: string
+  priorityFilter: Priority | 'ALL'
+
   // Actions
   setTasks: (tasks: Task[]) => void
   addTask: (task: Task) => void
   updateTask: (id: string, task: Partial<Task>) => void
   deleteTask: (id: string) => void
   toggleTaskComplete: (id: string) => void
-  
+
   setProjects: (projects: Project[]) => void
   addProject: (project: Project) => void
   updateProject: (id: string, project: Partial<Project>) => void
   deleteProject: (id: string) => void
-  
+
   setLabels: (labels: Label[]) => void
-  
+
   setCurrentView: (view: 'inbox' | 'today' | 'upcoming' | 'completed' | 'project') => void
   setSelectedProjectId: (id: string | null) => void
   setSidebarOpen: (open: boolean) => void
   setIsLoading: (loading: boolean) => void
+  setSearchQuery: (query: string) => void
+  setPriorityFilter: (priority: Priority | 'ALL') => void
 }
 
 export const useTaskStore = create<TaskState>((set) => ({
@@ -73,7 +77,9 @@ export const useTaskStore = create<TaskState>((set) => ({
   selectedProjectId: null,
   sidebarOpen: true,
   isLoading: false,
-  
+  searchQuery: '',
+  priorityFilter: 'ALL',
+
   setTasks: (tasks) => set({ tasks }),
   addTask: (task) => set((state) => ({ tasks: [...state.tasks, task] })),
   updateTask: (id, updatedTask) => set((state) => ({
@@ -87,7 +93,7 @@ export const useTaskStore = create<TaskState>((set) => ({
       task.id === id ? { ...task, completed: !task.completed } : task
     ),
   })),
-  
+
   setProjects: (projects) => set({ projects }),
   addProject: (project) => set((state) => ({ projects: [...state.projects, project] })),
   updateProject: (id, updatedProject) => set((state) => ({
@@ -98,11 +104,13 @@ export const useTaskStore = create<TaskState>((set) => ({
   deleteProject: (id) => set((state) => ({
     projects: state.projects.filter((project) => project.id !== id),
   })),
-  
+
   setLabels: (labels) => set({ labels }),
-  
+
   setCurrentView: (view) => set({ currentView: view }),
   setSelectedProjectId: (id) => set({ selectedProjectId: id }),
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
   setIsLoading: (loading) => set({ isLoading: loading }),
+  setSearchQuery: (query) => set({ searchQuery: query }),
+  setPriorityFilter: (priority) => set({ priorityFilter: priority }),
 }))

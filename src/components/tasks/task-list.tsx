@@ -21,7 +21,7 @@ import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Calendar as CalendarComponent } from '@/components/ui/calendar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { Calendar, Flag, Tag } from 'lucide-react'
+import { Calendar, Flag, Tag, Search, X } from 'lucide-react'
 import { Priority } from '@/store/task-store'
 import { format } from 'date-fns'
 import {
@@ -90,7 +90,7 @@ function SortableTaskItem({ task, onEdit }: SortableTaskItemProps) {
 }
 
 export function TaskList() {
-  const { tasks, currentView, selectedProjectId, updateTask, deleteTask, setTasks } = useTaskStore()
+  const { tasks, currentView, selectedProjectId, updateTask, deleteTask, setTasks, searchQuery, setSearchQuery, priorityFilter, setPriorityFilter } = useTaskStore()
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editDescription, setEditDescription] = useState('')
@@ -163,15 +163,32 @@ export function TaskList() {
   }
 
   const filterTasks = () => {
+    let filtered = tasks
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      filtered = filtered.filter(task =>
+        task.title.toLowerCase().includes(query) ||
+        (task.description && task.description.toLowerCase().includes(query))
+      )
+    }
+
+    // Apply priority filter
+    if (priorityFilter !== 'ALL') {
+      filtered = filtered.filter(task => task.priority === priorityFilter)
+    }
+
+    // Apply view filter
     switch (currentView) {
       case 'today':
-        return tasks.filter(task => {
+        return filtered.filter(task => {
           if (task.completed) return false
           if (!task.dueDate) return false
           return isToday(new Date(task.dueDate))
         })
       case 'upcoming':
-        return tasks.filter(task => {
+        return filtered.filter(task => {
           if (task.completed) return false
           if (!task.dueDate) return false
           const date = new Date(task.dueDate)
@@ -181,11 +198,11 @@ export function TaskList() {
           return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
         })
       case 'completed':
-        return tasks.filter(task => task.completed)
+        return filtered.filter(task => task.completed)
       case 'project':
-        return tasks.filter(task => task.projectId === selectedProjectId && !task.completed)
+        return filtered.filter(task => task.projectId === selectedProjectId && !task.completed)
       default: // inbox
-        return tasks.filter(task => !task.projectId && !task.completed)
+        return filtered.filter(task => !task.projectId && !task.completed)
     }
   }
 
@@ -212,6 +229,47 @@ export function TaskList() {
 
   return (
     <div className="flex flex-col h-full">
+      {/* Search and Filter Bar */}
+      <div className="flex items-center gap-2 p-4 border-b">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search tasks..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 pr-9"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="shrink-0">
+              <Flag className={cn("h-4 w-4 mr-2", priorityFilter !== 'ALL' ? priorityColors[priorityFilter as Priority] : 'text-muted-foreground')} />
+              {priorityFilter === 'ALL' ? 'All Priorities' : priorityFilter.charAt(0) + priorityFilter.slice(1).toLowerCase()}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => setPriorityFilter('ALL')}>
+              <Flag className="h-4 w-4 mr-2 text-muted-foreground" />
+              All Priorities
+            </DropdownMenuItem>
+            {(['LOW', 'MEDIUM', 'HIGH', 'URGENT'] as Priority[]).map((p) => (
+              <DropdownMenuItem key={p} onClick={() => setPriorityFilter(p)}>
+                <Flag className={cn("h-4 w-4 mr-2", priorityColors[p])} />
+                {p.charAt(0) + p.slice(1).toLowerCase()}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-1">
           {filteredTasks.length === 0 ? (
