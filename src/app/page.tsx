@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useTaskStore } from '@/store/task-store'
 import { AppSidebar } from '@/components/app-sidebar'
 import { TaskList } from '@/components/tasks/task-list'
+import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { Menu, Sun, Moon, Inbox, Calendar, CalendarDays, CheckCircle2, FolderOpen, TrendingUp, Clock, ListTodo, Plus } from 'lucide-react'
 import { useTheme } from 'next-themes'
@@ -241,6 +242,9 @@ export default function Home() {
             <TaskList />
           )}
         </main>
+
+        {/* Footer */}
+        <Footer />
       </div>
     </div>
   )
