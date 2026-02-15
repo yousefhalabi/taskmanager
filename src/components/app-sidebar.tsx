@@ -21,7 +21,9 @@ import {
   Edit3,
   Menu,
   X,
-  Settings
+  Settings,
+  Download,
+  Upload
 } from 'lucide-react'
 import { useTaskStore, Project } from '@/store/task-store'
 import {
@@ -49,6 +51,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { ExportDialog } from '@/components/export-import/export-dialog'
+import { ImportDialog } from '@/components/export-import/import-dialog'
 
 const PROJECT_COLORS = [
   '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16',
@@ -88,6 +92,8 @@ export function AppSidebar({ onNavigate }: SidebarProps) {
   const [editColor, setEditColor] = useState('')
   const [editIcon, setEditIcon] = useState('')
   const [selectedColor, setSelectedColor] = useState(PROJECT_COLORS[0])
+  const [exportDialogOpen, setExportDialogOpen] = useState(false)
+  const [importDialogOpen, setImportDialogOpen] = useState(false)
 
   const favoriteProjects = projects.filter(p => p.isFavorite)
   const regularProjects = projects.filter(p => !p.isFavorite)
@@ -198,6 +204,23 @@ export function AppSidebar({ onNavigate }: SidebarProps) {
         <h1 className="text-xl font-bold bg-gradient-to-r from-pink-500 to-orange-500 bg-clip-text text-transparent">
           TaskFlow
         </h1>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Settings className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => setExportDialogOpen(true)}>
+              <Download className="h-4 w-4 mr-2" />
+              Export Data
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setImportDialogOpen(true)}>
+              <Upload className="h-4 w-4 mr-2" />
+              Import Data
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <ScrollArea className="flex-1">
@@ -446,6 +469,10 @@ export function AppSidebar({ onNavigate }: SidebarProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Export and Import Dialogs */}
+      <ExportDialog open={exportDialogOpen} onOpenChange={setExportDialogOpen} />
+      <ImportDialog open={importDialogOpen} onOpenChange={setImportDialogOpen} />
     </div>
   )
 }
