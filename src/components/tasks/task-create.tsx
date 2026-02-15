@@ -43,6 +43,8 @@ export function TaskCreate({ projectId }: TaskCreateProps) {
   const [priority, setPriority] = useState<Priority>('NONE')
   const [isLoading, setIsLoading] = useState(false)
   const [datePickerOpen, setDatePickerOpen] = useState(false)
+  const [labelPickerOpen, setLabelPickerOpen] = useState(false)
+  const [priorityMenuOpen, setPriorityMenuOpen] = useState(false)
   const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>([])
 
   const { addTask, projects, selectedProjectId } = useTaskStore()
@@ -53,7 +55,7 @@ export function TaskCreate({ projectId }: TaskCreateProps) {
   const handleCreate = async () => {
     if (!title.trim()) return
     setIsLoading(true)
-    
+
     try {
       const res = await fetch('/api/tasks', {
         method: 'POST',
@@ -67,7 +69,7 @@ export function TaskCreate({ projectId }: TaskCreateProps) {
           labelIds: selectedLabelIds.length > 0 ? selectedLabelIds : undefined,
         }),
       })
-      
+
       if (res.ok) {
         const task = await res.json()
         addTask(task)
@@ -93,6 +95,18 @@ export function TaskCreate({ projectId }: TaskCreateProps) {
     setIsOpen(false)
   }
 
+  const handleFormKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key !== 'Escape') return
+
+    // If a child popover/dropdown is open, let Radix close it instead
+    if (datePickerOpen || labelPickerOpen || priorityMenuOpen) return
+
+    // No child overlays open -- close the form and prevent global handlers from firing
+    e.stopPropagation()
+    e.preventDefault()
+    resetForm()
+  }
+
   if (!isOpen) {
     return (
       <button
@@ -110,7 +124,7 @@ export function TaskCreate({ projectId }: TaskCreateProps) {
   }
 
   return (
-    <div className="p-4 bg-card rounded-xl border">
+    <div onKeyDown={handleFormKeyDown} className="p-4 bg-card rounded-xl border">
       <div className="space-y-3">
         <Input
           placeholder="Task name"
@@ -158,7 +172,7 @@ export function TaskCreate({ projectId }: TaskCreateProps) {
           </Popover>
           
           {/* Priority */}
-          <DropdownMenu>
+          <DropdownMenu onOpenChange={setPriorityMenuOpen}>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="h-7 text-xs">
                 <Flag className={cn("h-3 w-3 mr-1", priorityColors[priority])} />
@@ -183,6 +197,7 @@ export function TaskCreate({ projectId }: TaskCreateProps) {
           <LabelPicker
             selectedLabelIds={selectedLabelIds}
             onLabelIdsChange={setSelectedLabelIds}
+            onOpenChange={setLabelPickerOpen}
           />
 
           {/* Clear Due Date */}
