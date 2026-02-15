@@ -71,6 +71,7 @@ export function AppSidebar({ onNavigate }: SidebarProps) {
   const {
     projects,
     currentView,
+    selectedProjectId,
     setCurrentView,
     setSelectedProjectId,
     sidebarOpen,

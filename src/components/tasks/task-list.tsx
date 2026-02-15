@@ -407,11 +407,6 @@ export function TaskList() {
           description: 'Failed to save task order. Please try again.',
           variant: 'destructive',
         })
-      toast({
-        title: 'Error',
-        description: 'Failed to update task. Please try again.',
-        variant: 'destructive',
-      })
       }
     }
   }
