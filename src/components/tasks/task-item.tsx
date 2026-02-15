@@ -343,14 +343,13 @@ export function TaskItem({ task, onEdit }: TaskItemProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onEdit?.(task)} data-edit-task>
+            <DropdownMenuItem onClick={() => onEdit?.(task)}>
               <Edit3 className="h-4 w-4 mr-2" />
               Edit
             </DropdownMenuItem>
             <DropdownMenuItem
               className="text-destructive"
               onClick={() => setShowDeleteDialog(true)}
-              data-delete-task
             >
               <Trash2 className="h-4 w-4 mr-2" />
               Delete

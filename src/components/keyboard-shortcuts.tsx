@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Keyboard, X, Plus, Search, Circle, CheckCircle2, CalendarDays, Calendar, FolderOpen, Flag, ArrowUp, ArrowDown, ArrowRight, Inbox } from 'lucide-react'
+import { Keyboard, X, Plus, Search, Circle, CheckCircle2, CalendarDays, Calendar, FolderOpen, ArrowUp, ArrowDown, ArrowRight, Inbox } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const shortcuts = [
@@ -16,7 +16,7 @@ const shortcuts = [
     items: [
       { key: 'A', description: 'Add new task', icon: Plus },
       { key: 'Space', description: 'Toggle task completion', icon: Circle },
-      { key: 'Enter', description: 'Save task / Submit form', icon: CheckCircle2 },
+      { key: 'Enter', description: 'Edit selected task', icon: CheckCircle2 },
       { key: 'Esc', description: 'Close dialogs / Cancel', icon: X },
       { key: 'Del', description: 'Delete selected task', icon: ArrowRight },
     ],
@@ -38,16 +38,6 @@ const shortcuts = [
     items: [
       { key: '/', description: 'Focus search input', icon: Search },
       { key: 'Esc', description: 'Clear search', icon: ArrowRight },
-    ],
-  },
-  {
-    category: 'Priority (when editing)',
-    items: [
-      { key: '1', description: 'Set priority to None', icon: Flag },
-      { key: '2', description: 'Set priority to Low', icon: Flag },
-      { key: '3', description: 'Set priority to Medium', icon: Flag },
-      { key: '4', description: 'Set priority to High', icon: Flag },
-      { key: '5', description: 'Set priority to Urgent', icon: Flag },
     ],
   },
   {
