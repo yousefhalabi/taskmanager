@@ -43,6 +43,7 @@ const shortcuts = [
   {
     category: 'Other',
     items: [
+      { key: 'Ctrl+K / ⌘+K', description: 'Open command palette', icon: Search },
       { key: '?', description: 'Show this help', icon: Keyboard },
     ],
   },

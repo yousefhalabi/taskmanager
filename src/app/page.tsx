@@ -14,7 +14,11 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from 
 import { Progress } from '@/components/ui/progress'
 import { Card, CardContent } from '@/components/ui/card'
 import { isToday, isFuture, isPast, startOfWeek, endOfWeek, eachDayOfInterval, format } from 'date-fns'
+<<<<<<< HEAD
 import { useToast } from '@/hooks/use-toast'
+=======
+import { CommandPalette } from '@/components/command-palette'
+>>>>>>> 2966360 (Fix #95: Add command palette with Ctrl+K shortcut)
 
 const viewConfig = {
   inbox: { title: 'Inbox', icon: Inbox, description: 'Tasks without a project' },
@@ -166,6 +170,7 @@ export default function Home() {
             </div>
             
             <div className="flex items-center gap-2">
+              <CommandPalette />
               <ThemeToggle />
             </div>
           </div>
