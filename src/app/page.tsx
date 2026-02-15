@@ -8,6 +8,7 @@ import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { Menu, Inbox, Calendar, CalendarDays, CheckCircle2, FolderOpen, TrendingUp, Clock } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { GettingStarted, useGettingStarted } from '@/components/getting-started'
 import { cn } from '@/lib/utils'
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet'
 import { Progress } from '@/components/ui/progress'
@@ -42,6 +43,7 @@ export default function Home() {
   
   const [mounted, setMounted] = useState(false)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
+  const { open: gettingStartedOpen, setOpen: setGettingStartedOpen } = useGettingStarted()
 
   useEffect(() => {
     setMounted(true)
@@ -235,8 +237,11 @@ export default function Home() {
         </main>
 
         {/* Footer */}
-        <Footer />
+        <Footer onShowGuide={() => setGettingStartedOpen(true)} />
       </div>
+
+      {/* Getting Started Guide */}
+      <GettingStarted open={gettingStartedOpen} onOpenChange={setGettingStartedOpen} />
     </div>
   )
 }
