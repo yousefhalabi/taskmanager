@@ -33,7 +33,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Calendar, Flag, Tag, Search, X } from 'lucide-react'
+import { Calendar, Flag, Tag, Search, X, FolderOpen, Inbox } from 'lucide-react'
 import { Priority } from '@/store/task-store'
 import { format } from 'date-fns'
 import { useToast } from '@/hooks/use-toast'
@@ -87,7 +87,7 @@ function SortableTaskItem({ task, onEdit }: SortableTaskItemProps) {
   }
 
   return (
-    <div ref={setNodeRef} style={style} className={cn(isDragging && 'opacity-50')}>
+    <div ref={setNodeRef} style={style} className={cn('group', isDragging && 'opacity-50')}>
       <div className="flex items-center">
         <button
           {...attributes}
@@ -96,7 +96,7 @@ function SortableTaskItem({ task, onEdit }: SortableTaskItemProps) {
         >
           <GripVertical className="h-4 w-4 text-muted-foreground" />
         </button>
-        <div className="flex-1 group">
+        <div className="flex-1">
           <TaskItem task={task} onEdit={onEdit} />
         </div>
       </div>
