@@ -71,6 +71,7 @@ export function AppSidebar({ onNavigate }: SidebarProps) {
   const {
     projects,
     currentView,
+    selectedProjectId,
     setCurrentView,
     setSelectedProjectId,
     sidebarOpen,
@@ -239,7 +240,7 @@ export function AppSidebar({ onNavigate }: SidebarProps) {
               className={cn(
                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
                 "hover:bg-accent",
-                currentView === item.id && !useTaskStore.getState().selectedProjectId
+                currentView === item.id && !selectedProjectId
                   ? "bg-accent text-accent-foreground"
                   : "text-muted-foreground"
               )}
@@ -274,7 +275,7 @@ export function AppSidebar({ onNavigate }: SidebarProps) {
                     onEdit={openEditDialog}
                     onDelete={handleDeleteClick}
                     onClick={() => handleNavClick('project', project.id)}
-                    isActive={currentView === 'project' && useTaskStore.getState().selectedProjectId === project.id}
+                    isActive={currentView === 'project' && selectedProjectId === project.id}
                   />
                 ))}
               </div>
@@ -358,7 +359,7 @@ export function AppSidebar({ onNavigate }: SidebarProps) {
                   onEdit={openEditDialog}
                   onDelete={handleDeleteClick}
                   onClick={() => handleNavClick('project', project.id)}
-                  isActive={currentView === 'project' && useTaskStore.getState().selectedProjectId === project.id}
+                  isActive={currentView === 'project' && selectedProjectId === project.id}
                 />
               ))}
               {regularProjects.length === 0 && (
