@@ -7,27 +7,28 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Input } from '@/components/ui/input'
-import { 
-  Inbox, 
-  Calendar, 
-  CalendarDays, 
-  CheckCircle2, 
-  Plus, 
-  ChevronDown, 
+import {
+  Inbox,
+  Calendar,
+  CalendarDays,
+  CheckCircle2,
+  Plus,
+  ChevronDown,
   ChevronRight,
   Star,
   MoreHorizontal,
   Trash2,
   Edit3,
   Menu,
-  X
+  X,
+  Settings
 } from 'lucide-react'
 import { useTaskStore, Project } from '@/store/task-store'
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import {
   Dialog,
@@ -38,6 +39,16 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 const PROJECT_COLORS = [
   '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16',
@@ -52,21 +63,30 @@ interface SidebarProps {
 
 export function AppSidebar({ onNavigate }: SidebarProps) {
   const pathname = usePathname()
-  const { 
-    projects, 
-    currentView, 
-    setCurrentView, 
-    setSelectedProjectId, 
+  const {
+    projects,
+    currentView,
+    setCurrentView,
+    setSelectedProjectId,
     sidebarOpen,
     deleteProject,
-    addProject
+    addProject,
+    updateProject
   } = useTaskStore()
-  
+
   const [projectsExpanded, setProjectsExpanded] = useState(true)
   const [favoritesExpanded, setFavoritesExpanded] = useState(true)
   const [newProjectOpen, setNewProjectOpen] = useState(false)
+  const [editProjectOpen, setEditProjectOpen] = useState(false)
+  const [editingProject, setEditingProject] = useState<Project | null>(null)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null)
   const [newProjectName, setNewProjectName] = useState('')
   const [newProjectDescription, setNewProjectDescription] = useState('')
+  const [editName, setEditName] = useState('')
+  const [editDescription, setEditDescription] = useState('')
+  const [editColor, setEditColor] = useState('')
+  const [editIcon, setEditIcon] = useState('')
   const [selectedColor, setSelectedColor] = useState(PROJECT_COLORS[0])
 
   const favoriteProjects = projects.filter(p => p.isFavorite)
@@ -74,7 +94,7 @@ export function AppSidebar({ onNavigate }: SidebarProps) {
 
   const handleCreateProject = async () => {
     if (!newProjectName.trim()) return
-    
+
     try {
       const res = await fetch('/api/projects', {
         method: 'POST',
@@ -85,7 +105,7 @@ export function AppSidebar({ onNavigate }: SidebarProps) {
           color: selectedColor,
         }),
       })
-      
+
       if (res.ok) {
         const project = await res.json()
         addProject(project)
@@ -98,13 +118,57 @@ export function AppSidebar({ onNavigate }: SidebarProps) {
     }
   }
 
-  const handleDeleteProject = async (projectId: string) => {
+  const handleEditProject = async () => {
+    if (!editingProject || !editName.trim()) return
+
     try {
-      await fetch(`/api/projects/${projectId}`, { method: 'DELETE' })
-      deleteProject(projectId)
+      const res = await fetch(`/api/projects/${editingProject.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: editName,
+          description: editDescription,
+          color: editColor,
+          icon: editIcon,
+        }),
+      })
+
+      if (res.ok) {
+        const project = await res.json()
+        updateProject(editingProject.id, project)
+        setEditProjectOpen(false)
+        setEditingProject(null)
+      }
+    } catch (error) {
+      console.error('Failed to update project:', error)
+    }
+  }
+
+  const openEditDialog = (project: Project) => {
+    setEditingProject(project)
+    setEditName(project.name)
+    setEditDescription(project.description || '')
+    setEditColor(project.color)
+    setEditIcon(project.icon || '')
+    setEditProjectOpen(true)
+  }
+
+  const confirmDeleteProject = async () => {
+    if (!projectToDelete) return
+
+    try {
+      await fetch(`/api/projects/${projectToDelete.id}`, { method: 'DELETE' })
+      deleteProject(projectToDelete.id)
+      setDeleteConfirmOpen(false)
+      setProjectToDelete(null)
     } catch (error) {
       console.error('Failed to delete project:', error)
     }
+  }
+
+  const handleDeleteClick = (project: Project) => {
+    setProjectToDelete(project)
+    setDeleteConfirmOpen(true)
   }
 
   const navItems = [
@@ -178,7 +242,8 @@ export function AppSidebar({ onNavigate }: SidebarProps) {
                   <ProjectItem
                     key={project.id}
                     project={project}
-                    onDelete={handleDeleteProject}
+                    onEdit={openEditDialog}
+                    onDelete={handleDeleteClick}
                     onClick={() => handleNavClick('project', project.id)}
                     isActive={currentView === 'project' && useTaskStore.getState().selectedProjectId === project.id}
                   />
@@ -261,7 +326,8 @@ export function AppSidebar({ onNavigate }: SidebarProps) {
                 <ProjectItem
                   key={project.id}
                   project={project}
-                  onDelete={handleDeleteProject}
+                  onEdit={openEditDialog}
+                  onDelete={handleDeleteClick}
                   onClick={() => handleNavClick('project', project.id)}
                   isActive={currentView === 'project' && useTaskStore.getState().selectedProjectId === project.id}
                 />
@@ -275,18 +341,123 @@ export function AppSidebar({ onNavigate }: SidebarProps) {
           )}
         </div>
       </ScrollArea>
+
+      {/* Edit Project Dialog */}
+      <Dialog open={editProjectOpen} onOpenChange={setEditProjectOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Project</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Project Name</Label>
+              <Input
+                id="edit-name"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                placeholder="Enter project name..."
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-description">Description (optional)</Label>
+              <Textarea
+                id="edit-description"
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                placeholder="Enter project description..."
+                rows={3}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-icon">Icon (optional)</Label>
+              <Input
+                id="edit-icon"
+                value={editIcon}
+                onChange={(e) => setEditIcon(e.target.value)}
+                placeholder="Enter emoji or icon name..."
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Color</Label>
+              <div className="flex flex-wrap gap-2">
+                {PROJECT_COLORS.map((color) => (
+                  <button
+                    key={color}
+                    onClick={() => setEditColor(color)}
+                    className={cn(
+                      "w-6 h-6 rounded-full transition-transform",
+                      editColor === color && "ring-2 ring-offset-2 ring-foreground scale-110"
+                    )}
+                    style={{ backgroundColor: color }}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={handleEditProject} className="flex-1">
+                Save Changes
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setEditProjectOpen(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Project</AlertDialogTitle>
+            <AlertDialogDescription>
+              {projectToDelete && (
+                <>
+                  Are you sure you want to delete "{projectToDelete.name}"?
+                  {projectToDelete._count && projectToDelete._count.tasks > 0 && (
+                    <>
+                      <br />
+                      <br />
+                      <span className="text-destructive">
+                        This will also delete {projectToDelete._count.tasks} task{projectToDelete._count.tasks > 1 ? 's' : ''} associated with this project.
+                      </span>
+                    </>
+                  )}
+                  <br />
+                  <br />
+                  This action cannot be undone.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteProject}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
 
 interface ProjectItemProps {
   project: Project
-  onDelete: (id: string) => void
+  onEdit: (project: Project) => void
+  onDelete: (project: Project) => void
   onClick: () => void
   isActive: boolean
 }
 
-function ProjectItem({ project, onDelete, onClick, isActive }: ProjectItemProps) {
+function ProjectItem({ project, onEdit, onDelete, onClick, isActive }: ProjectItemProps) {
   return (
     <div
       className={cn(
@@ -299,11 +470,18 @@ function ProjectItem({ project, onDelete, onClick, isActive }: ProjectItemProps)
         onClick={onClick}
         className="flex items-center gap-2 px-3 py-2 flex-1 text-left"
       >
-        <div
-          className="w-3 h-3 rounded-sm"
-          style={{ backgroundColor: project.color }}
-        />
+        {project.icon ? (
+          <span className="text-sm">{project.icon}</span>
+        ) : (
+          <div
+            className="w-3 h-3 rounded-sm"
+            style={{ backgroundColor: project.color }}
+          />
+        )}
         <span className="text-sm truncate">{project.name}</span>
+        <span className="text-xs text-muted-foreground ml-auto mr-2">
+          {project._count?.tasks ?? 0}
+        </span>
         {project.isFavorite && (
           <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 ml-auto" />
         )}
@@ -319,13 +497,13 @@ function ProjectItem({ project, onDelete, onClick, isActive }: ProjectItemProps)
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={() => onEdit(project)}>
             <Edit3 className="h-4 w-4 mr-2" />
             Edit
           </DropdownMenuItem>
           <DropdownMenuItem
             className="text-destructive"
-            onClick={() => onDelete(project.id)}
+            onClick={() => onDelete(project)}
           >
             <Trash2 className="h-4 w-4 mr-2" />
             Delete
