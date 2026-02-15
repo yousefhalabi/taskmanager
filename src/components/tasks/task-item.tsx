@@ -80,6 +80,7 @@ export function TaskItem({ task, onEdit }: TaskItemProps) {
       })
     } catch (error) {
       console.error('Failed to toggle task:', error)
+      toast({ title: 'Error', description: 'Failed to update task. Please try again.', variant: 'destructive' })
     }
   }
 
@@ -95,6 +96,7 @@ export function TaskItem({ task, onEdit }: TaskItemProps) {
       })
     } catch (error) {
       console.error('Failed to delete task:', error)
+      toast({ title: 'Error', description: 'Failed to delete task. Please try again.', variant: 'destructive' })
     }
   }
 
@@ -114,6 +116,7 @@ export function TaskItem({ task, onEdit }: TaskItemProps) {
       }
     } catch (error) {
       console.error('Failed to toggle subtask:', error)
+      toast({ title: 'Error', description: 'Failed to toggle subtask. Please try again.', variant: 'destructive' })
       toggleSubtask(subtaskId)
     }
   }
@@ -130,6 +133,7 @@ export function TaskItem({ task, onEdit }: TaskItemProps) {
       }
     } catch (error) {
       console.error('Failed to update subtask:', error)
+      toast({ title: 'Error', description: 'Failed to update subtask. Please try again.', variant: 'destructive' })
     }
   }
 
@@ -141,6 +145,7 @@ export function TaskItem({ task, onEdit }: TaskItemProps) {
       }
     } catch (error) {
       console.error('Failed to delete subtask:', error)
+      toast({ title: 'Error', description: 'Failed to delete subtask. Please try again.', variant: 'destructive' })
     }
   }
 
@@ -160,6 +165,7 @@ export function TaskItem({ task, onEdit }: TaskItemProps) {
       })
     } catch (error) {
       console.error('Failed to update due date:', error)
+      toast({ title: 'Error', description: 'Failed to update due date. Please try again.', variant: 'destructive' })
     }
   }
 
@@ -173,6 +179,7 @@ export function TaskItem({ task, onEdit }: TaskItemProps) {
       })
     } catch (error) {
       console.error('Failed to update priority:', error)
+      toast({ title: 'Error', description: 'Failed to update priority. Please try again.', variant: 'destructive' })
     }
   }
 

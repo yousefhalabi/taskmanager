@@ -51,6 +51,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { useToast } from '@/hooks/use-toast'
 import { ExportDialog } from '@/components/export-import/export-dialog'
 import { ImportDialog } from '@/components/export-import/import-dialog'
 
@@ -77,6 +78,7 @@ export function AppSidebar({ onNavigate }: SidebarProps) {
     addProject,
     updateProject
   } = useTaskStore()
+  const { toast } = useToast()
 
   const [projectsExpanded, setProjectsExpanded] = useState(true)
   const [favoritesExpanded, setFavoritesExpanded] = useState(true)
@@ -121,6 +123,7 @@ export function AppSidebar({ onNavigate }: SidebarProps) {
       }
     } catch (error) {
       console.error('Failed to create project:', error)
+      toast({ title: 'Error', description: 'Failed to create project. Please try again.', variant: 'destructive' })
     }
   }
 
@@ -147,6 +150,7 @@ export function AppSidebar({ onNavigate }: SidebarProps) {
       }
     } catch (error) {
       console.error('Failed to update project:', error)
+      toast({ title: 'Error', description: 'Failed to update project. Please try again.', variant: 'destructive' })
     }
   }
 
@@ -169,6 +173,7 @@ export function AppSidebar({ onNavigate }: SidebarProps) {
       setProjectToDelete(null)
     } catch (error) {
       console.error('Failed to delete project:', error)
+      toast({ title: 'Error', description: 'Failed to delete project. Please try again.', variant: 'destructive' })
     }
   }
 

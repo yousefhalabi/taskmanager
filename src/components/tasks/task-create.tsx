@@ -81,6 +81,7 @@ export function TaskCreate({ projectId }: TaskCreateProps) {
       }
     } catch (error) {
       console.error('Failed to create task:', error)
+      toast({ title: 'Error', description: 'Failed to create task. Please try again.', variant: 'destructive' })
     } finally {
       setIsLoading(false)
     }
