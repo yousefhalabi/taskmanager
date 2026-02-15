@@ -19,6 +19,17 @@ export interface Task {
   order: number
   projectId?: string
   labels: Label[]
+  subtasks?: Subtask[]
+  createdAt: string
+  updatedAt: string
+}
+
+export interface Subtask {
+  id: string
+  title: string
+  completed: boolean
+  order: number
+  taskId: string
   createdAt: string
   updatedAt: string
 }
@@ -41,6 +52,7 @@ interface TaskState {
   tasks: Task[]
   projects: Project[]
   labels: Label[]
+  subtasks: Subtask[]
   currentView: 'inbox' | 'today' | 'upcoming' | 'completed' | 'project'
   selectedProjectId: string | null
   sidebarOpen: boolean
@@ -66,6 +78,13 @@ interface TaskState {
   updateLabel: (id: string, label: Partial<Label>) => void
   deleteLabel: (id: string) => void
 
+  // Subtask actions
+  setSubtasks: (subtasks: Subtask[]) => void
+  addSubtask: (subtask: Subtask) => void
+  updateSubtask: (id: string, subtask: Partial<Subtask>) => void
+  deleteSubtask: (id: string) => void
+  toggleSubtask: (id: string) => void
+
   setCurrentView: (view: 'inbox' | 'today' | 'upcoming' | 'completed' | 'project') => void
   setSelectedProjectId: (id: string | null) => void
   setSidebarOpen: (open: boolean) => void
@@ -79,6 +98,7 @@ export const useTaskStore = create<TaskState>((set) => ({
   tasks: [],
   projects: [],
   labels: [],
+  subtasks: [],
   currentView: 'inbox',
   selectedProjectId: null,
   sidebarOpen: true,
@@ -94,6 +114,7 @@ export const useTaskStore = create<TaskState>((set) => ({
   })),
   deleteTask: (id) => set((state) => ({
     tasks: state.tasks.filter((task) => task.id !== id),
+    subtasks: state.subtasks.filter((s) => s.taskId !== id),
   })),
   toggleTaskComplete: (id) => set((state) => ({
     tasks: state.tasks.map((task) =>
@@ -121,6 +142,23 @@ export const useTaskStore = create<TaskState>((set) => ({
   })),
   deleteLabel: (id) => set((state) => ({
     labels: state.labels.filter((label) => label.id !== id),
+  })),
+
+  // Subtask actions
+  setSubtasks: (subtasks) => set({ subtasks }),
+  addSubtask: (subtask) => set((state) => ({ subtasks: [...state.subtasks, subtask] })),
+  updateSubtask: (id, updatedSubtask) => set((state) => ({
+    subtasks: state.subtasks.map((subtask) =>
+      subtask.id === id ? { ...subtask, ...updatedSubtask } : subtask
+    ),
+  })),
+  deleteSubtask: (id) => set((state) => ({
+    subtasks: state.subtasks.filter((subtask) => subtask.id !== id),
+  })),
+  toggleSubtask: (id) => set((state) => ({
+    subtasks: state.subtasks.map((subtask) =>
+      subtask.id === id ? { ...subtask, completed: !subtask.completed } : subtask
+    ),
   })),
 
   setCurrentView: (view) => set({ currentView: view }),

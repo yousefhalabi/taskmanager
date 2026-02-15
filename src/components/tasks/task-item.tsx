@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { format, isToday, isTomorrow, isPast, addDays } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, Flag, MoreHorizontal, Edit3, Trash2, Tag } from 'lucide-react'
-import { Task, Priority } from '@/store/task-store'
+import { Calendar, Flag, MoreHorizontal, Edit3, Trash2, Tag, ListTodo } from 'lucide-react'
+import { Task, Priority, Subtask } from '@/store/task-store'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,6 +32,7 @@ import {
 import { Calendar as CalendarComponent } from '@/components/ui/calendar'
 import { useTaskStore } from '@/store/task-store'
 import { useToast } from '@/hooks/use-toast'
+import { SubtaskList } from './subtask-list'
 
 interface TaskItemProps {
   task: Task
@@ -55,11 +56,12 @@ const priorityBgColors: Record<Priority, string> = {
 }
 
 export function TaskItem({ task, onEdit }: TaskItemProps) {
-  const { toggleTaskComplete, deleteTask, updateTask } = useTaskStore()
+  const { toggleTaskComplete, deleteTask, updateTask, subtasks, addSubtask, updateSubtask, deleteSubtask, toggleSubtask } = useTaskStore()
   const { toast } = useToast()
   const [showCalendar, setShowCalendar] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [addDatePickerOpen, setAddDatePickerOpen] = useState(false)
+  const taskSubtasks = useMemo(() => subtasks.filter(s => s.taskId === task.id), [subtasks, task.id])
 
   const handleToggleComplete = async () => {
     const newCompletedState = !task.completed
@@ -94,6 +96,56 @@ export function TaskItem({ task, onEdit }: TaskItemProps) {
     } catch (error) {
       console.error('Failed to delete task:', error)
     }
+  }
+
+  const handleSubtaskToggle = async (subtaskId: string) => {
+    // Optimistic update
+    toggleSubtask(subtaskId)
+
+    try {
+      const res = await fetch(`/api/subtasks/${subtaskId}/toggle`, { method: 'POST' })
+      if (!res.ok) {
+        // Revert on error
+        toggleSubtask(subtaskId)
+        toast({
+          title: 'Failed to toggle subtask',
+          variant: 'destructive',
+        })
+      }
+    } catch (error) {
+      console.error('Failed to toggle subtask:', error)
+      toggleSubtask(subtaskId)
+    }
+  }
+
+  const handleSubtaskUpdate = async (subtaskId: string, updates: Partial<Subtask>) => {
+    try {
+      const res = await fetch(`/api/subtasks/${subtaskId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      })
+      if (res.ok) {
+        updateSubtask(subtaskId, updates)
+      }
+    } catch (error) {
+      console.error('Failed to update subtask:', error)
+    }
+  }
+
+  const handleSubtaskDelete = async (subtaskId: string) => {
+    try {
+      const res = await fetch(`/api/subtasks/${subtaskId}`, { method: 'DELETE' })
+      if (res.ok) {
+        deleteSubtask(subtaskId)
+      }
+    } catch (error) {
+      console.error('Failed to delete subtask:', error)
+    }
+  }
+
+  const handleSubtaskAdd = (subtask: Subtask) => {
+    addSubtask(subtask)
   }
 
   const handleDateChange = async (date: Date | undefined) => {
@@ -228,6 +280,14 @@ export function TaskItem({ task, onEdit }: TaskItemProps) {
               </DropdownMenuContent>
             </DropdownMenu>
           )}
+
+          {/* Subtasks */}
+          {taskSubtasks.length > 0 && (
+            <Badge variant="outline" className="text-xs px-2 py-0.5">
+              <ListTodo className="h-2.5 w-2.5 mr-1" />
+              {taskSubtasks.filter(s => s.completed).length}/{taskSubtasks.length}
+            </Badge>
+          )}
         </div>
       </div>
       
@@ -301,7 +361,17 @@ export function TaskItem({ task, onEdit }: TaskItemProps) {
         <AlertDialogHeader>
           <AlertDialogTitle>Delete task?</AlertDialogTitle>
           <AlertDialogDescription>
-            This will permanently delete "{task.title}". This action cannot be undone.
+            This will permanently delete "{task.title}".
+            {taskSubtasks.length > 0 && (
+              <>
+                <br />
+                <span className="text-destructive">
+                  This will also delete {taskSubtasks.length} subtask{taskSubtasks.length > 1 ? 's' : ''} associated with this task.
+                </span>
+              </>
+            )}
+            <br />
+            This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -312,6 +382,16 @@ export function TaskItem({ task, onEdit }: TaskItemProps) {
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+
+    {/* Subtask List */}
+    <SubtaskList
+      taskId={task.id}
+      subtasks={taskSubtasks}
+      onSubtaskAdd={handleSubtaskAdd}
+      onSubtaskUpdate={handleSubtaskUpdate}
+      onSubtaskDelete={handleSubtaskDelete}
+      onSubtaskToggle={handleSubtaskToggle}
+    />
     </>
   )
 }

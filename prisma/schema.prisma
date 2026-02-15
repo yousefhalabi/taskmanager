@@ -38,8 +38,22 @@ model Task {
   projectId   String?
   project     Project?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
   labels      TaskLabel[]
+  subtasks    Subtask[]
 
   @@map("tasks")
+}
+
+model Subtask {
+  id        String   @id @default(cuid())
+  title     String
+  completed Boolean  @default(false)
+  order     Int      @default(0)
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("subtasks")
 }
 
 model Label {
