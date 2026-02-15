@@ -40,12 +40,14 @@ interface TaskState {
   tasks: Task[]
   projects: Project[]
   labels: Label[]
-  currentView: 'inbox' | 'today' | 'upcoming' | 'completed' | 'project'
+  currentView: 'inbox' | 'today' | 'upcoming' | 'completed' | 'project' | 'calendar'
   selectedProjectId: string | null
   sidebarOpen: boolean
   isLoading: boolean
   searchQuery: string
   priorityFilter: Priority | 'ALL'
+  calendarView: 'month' | 'week' | 'day'
+  selectedDate: Date | null
 
   // Actions
   setTasks: (tasks: Task[]) => void
@@ -61,12 +63,14 @@ interface TaskState {
 
   setLabels: (labels: Label[]) => void
 
-  setCurrentView: (view: 'inbox' | 'today' | 'upcoming' | 'completed' | 'project') => void
+  setCurrentView: (view: 'inbox' | 'today' | 'upcoming' | 'completed' | 'project' | 'calendar') => void
   setSelectedProjectId: (id: string | null) => void
   setSidebarOpen: (open: boolean) => void
   setIsLoading: (loading: boolean) => void
   setSearchQuery: (query: string) => void
   setPriorityFilter: (priority: Priority | 'ALL') => void
+  setCalendarView: (view: 'month' | 'week' | 'day') => void
+  setSelectedDate: (date: Date | null) => void
 }
 
 export const useTaskStore = create<TaskState>((set) => ({
@@ -79,6 +83,8 @@ export const useTaskStore = create<TaskState>((set) => ({
   isLoading: false,
   searchQuery: '',
   priorityFilter: 'ALL',
+  calendarView: 'month',
+  selectedDate: null,
 
   setTasks: (tasks) => set({ tasks }),
   addTask: (task) => set((state) => ({ tasks: [...state.tasks, task] })),
@@ -113,4 +119,6 @@ export const useTaskStore = create<TaskState>((set) => ({
   setIsLoading: (loading) => set({ isLoading: loading }),
   setSearchQuery: (query) => set({ searchQuery: query }),
   setPriorityFilter: (priority) => set({ priorityFilter: priority }),
+  setCalendarView: (view) => set({ calendarView: view }),
+  setSelectedDate: (date) => set({ selectedDate: date }),
 }))
