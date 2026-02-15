@@ -13,11 +13,17 @@ interface LabelPickerProps {
   selectedLabelIds: string[]
   onLabelIdsChange: (labelIds: string[]) => void
   trigger?: React.ReactNode
+  onOpenChange?: (open: boolean) => void
 }
 
-export function LabelPicker({ selectedLabelIds, onLabelIdsChange, trigger }: LabelPickerProps) {
+export function LabelPicker({ selectedLabelIds, onLabelIdsChange, trigger, onOpenChange }: LabelPickerProps) {
   const { labels } = useTaskStore()
   const [open, setOpen] = useState(false)
+
+  const handleOpenChange = (value: boolean) => {
+    setOpen(value)
+    onOpenChange?.(value)
+  }
 
   const toggleLabel = (labelId: string) => {
     if (selectedLabelIds.includes(labelId)) {
@@ -52,7 +58,7 @@ export function LabelPicker({ selectedLabelIds, onLabelIdsChange, trigger }: Lab
   )
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         {trigger || defaultTrigger}
       </PopoverTrigger>
