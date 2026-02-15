@@ -41,7 +41,7 @@ export async function PATCH(
     const body = await request.json()
     const { title, description, completed, dueDate, priority, projectId, labelIds } = body
     
-    const task = await db.task.update({
+    await db.task.update({
       where: { id },
       data: {
         title,
@@ -51,23 +51,14 @@ export async function PATCH(
         priority,
         projectId: projectId === null ? null : projectId,
       },
-      include: {
-        labels: {
-          include: {
-            label: true
-          }
-        }
-      }
     })
-    
+
     // Handle label updates if provided
     if (labelIds !== undefined) {
-      // Delete existing labels
       await db.taskLabel.deleteMany({
         where: { taskId: id }
       })
-      
-      // Create new labels
+
       if (labelIds.length > 0) {
         await db.taskLabel.createMany({
           data: labelIds.map((labelId: string) => ({
@@ -77,10 +68,22 @@ export async function PATCH(
         })
       }
     }
-    
+
+    // Re-fetch to get current state including fresh labels
+    const task = await db.task.findUnique({
+      where: { id },
+      include: {
+        labels: {
+          include: {
+            label: true
+          }
+        }
+      }
+    })
+
     return NextResponse.json({
       ...task,
-      labels: task.labels.map(tl => tl.label)
+      labels: task!.labels.map(tl => tl.label)
     })
   } catch (error) {
     console.error('Failed to update task:', error)
