@@ -13,6 +13,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from 
 import { Progress } from '@/components/ui/progress'
 import { Card, CardContent } from '@/components/ui/card'
 import { isToday, isFuture, isPast, startOfWeek, endOfWeek, eachDayOfInterval, format } from 'date-fns'
+import { useToast } from '@/hooks/use-toast'
 
 const viewConfig = {
   inbox: { title: 'Inbox', icon: Inbox, description: 'Tasks without a project' },
@@ -37,6 +38,7 @@ export default function Home() {
     isLoading,
     setIsLoading 
   } = useTaskStore()
+  const { toast } = useToast()
   
   const [mounted, setMounted] = useState(false)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
@@ -65,6 +67,7 @@ export default function Home() {
       }
     } catch (error) {
       console.error('Failed to fetch data:', error)
+      toast({ title: 'Error', description: 'Failed to load data. Please refresh the page.', variant: 'destructive' })
     } finally {
       setIsLoading(false)
     }

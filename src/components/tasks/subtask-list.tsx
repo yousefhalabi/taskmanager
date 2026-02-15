@@ -34,6 +34,7 @@ interface SubtaskItemProps {
 function SubtaskItem({ subtask, onToggle, onUpdate, onDelete }: SubtaskItemProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editTitle, setEditTitle] = useState(subtask.title)
+  const { toast } = useToast()
 
   const handleSaveEdit = async () => {
     if (editTitle.trim() && editTitle !== subtask.title) {
@@ -49,6 +50,7 @@ function SubtaskItem({ subtask, onToggle, onUpdate, onDelete }: SubtaskItemProps
         }
       } catch (error) {
         console.error('Failed to update subtask:', error)
+        toast({ title: 'Error', description: 'Failed to update subtask. Please try again.', variant: 'destructive' })
       }
     } else {
       setIsEditing(false)
