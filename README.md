@@ -72,6 +72,65 @@ bun start
 
 Open [http://localhost:3000](http://localhost:3000) to see your application running.
 
+## 🐳 Docker Deployment
+
+TaskManager supports Docker for easy self-hosting and deployment.
+
+### Quick Start
+
+```bash
+# Clone the repository
+git clone https://github.com/yousefhalabi/taskmanager.git
+cd taskmanager
+
+# Start with Docker Compose
+docker compose up -d
+
+# The app will be available at http://localhost:3000
+```
+
+### Configuration
+
+The following environment variables can be configured in `docker-compose.yml`:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DATABASE_URL` | `file:/data/taskmanager.db` | SQLite database file path |
+| `PORT` | `3000` | Server port |
+| `NODE_ENV` | `production` | Environment mode |
+
+### Data Persistence
+
+The SQLite database is stored in a named Docker volume (`taskmanager-data`). This ensures your data persists across container restarts and updates.
+
+### Backup
+
+To backup your data, simply copy the SQLite file from the volume:
+
+```bash
+# Create a backup
+docker run --rm -v taskmanager-data:/data -v $(pwd):/backup alpine \
+  cp /data/taskmanager.db /backup/taskmanager-backup-$(date +%Y%m%d).db
+
+# Restore from backup
+docker run --rm -v taskmanager_data:/data -v $(pwd):/backup alpine \
+  cp /backup/taskmanager-backup-20250215.db /data/taskmanager.db
+```
+
+### Image Size
+
+The production Docker image is optimized using multi-stage builds and Alpine Linux.
+
+### Health Check
+
+The container includes a built-in health check that monitors the `/api` endpoint. You can check health status with:
+
+```bash
+docker compose ps
+```
+
+For detailed deployment instructions including reverse proxy configuration, see [DEPLOYMENT.md](DEPLOYMENT.md).
+
 ## 🤖 Powered by Z.ai
 
 This scaffold is optimized for use with [Z.ai](https://chat.z.ai) - your AI assistant for:
