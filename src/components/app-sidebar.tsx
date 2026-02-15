@@ -62,6 +62,32 @@ const PROJECT_COLORS = [
   '#ec4899', '#f43f5e'
 ]
 
+// Accessible color names for screen readers
+const COLOR_NAMES: Record<string, string> = {
+  '#ef4444': 'Red',
+  '#f97316': 'Orange',
+  '#f59e0b': 'Amber',
+  '#eab308': 'Yellow',
+  '#84cc16': 'Lime',
+  '#22c55e': 'Green',
+  '#10b981': 'Emerald',
+  '#14b8a6': 'Teal',
+  '#06b6d4': 'Cyan',
+  '#0ea5e9': 'Sky',
+  '#3b82f6': 'Blue',
+  '#6366f1': 'Indigo',
+  '#8b5cf6': 'Violet',
+  '#a855f7': 'Purple',
+  '#d946ef': 'Fuchsia',
+  '#ec4899': 'Pink',
+  '#f43f5e': 'Rose',
+}
+
+// Get accessible color name, fallback to hex code if not found
+function getAccessibleColorName(color: string): string {
+  return COLOR_NAMES[color] || color
+}
+
 interface SidebarProps {
   onNavigate?: () => void
 }
@@ -333,6 +359,7 @@ export function AppSidebar({ onNavigate }: SidebarProps) {
                         <button
                           key={color}
                           onClick={() => setSelectedColor(color)}
+                          aria-label={getAccessibleColorName(color)}
                           className={cn(
                             "w-6 h-6 rounded-full transition-transform",
                             selectedColor === color && "ring-2 ring-offset-2 ring-foreground scale-110"
@@ -413,6 +440,7 @@ export function AppSidebar({ onNavigate }: SidebarProps) {
                   <button
                     key={color}
                     onClick={() => setEditColor(color)}
+                    aria-label={getAccessibleColorName(color)}
                     className={cn(
                       "w-6 h-6 rounded-full transition-transform",
                       editColor === color && "ring-2 ring-offset-2 ring-foreground scale-110"
