@@ -4,11 +4,13 @@ import { useState, useEffect } from 'react'
 import { useTaskStore, Task } from '@/store/task-store'
 import { TaskItem } from './task-item'
 import { TaskCreate } from './task-create'
+import { KeyboardShortcutsHelp } from '@/components/keyboard-shortcuts'
+import { useKeyboardShortcuts, KeyboardShortcutMap } from '@/hooks/use-keyboard-shortcuts'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { isToday, isFuture, isPast, startOfDay, addDays } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { CheckCircle2, Circle, ListTodo, GripVertical } from 'lucide-react'
+import { CheckCircle2, Circle, ListTodo, GripVertical, Keyboard } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -21,6 +23,16 @@ import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Calendar as CalendarComponent } from '@/components/ui/calendar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Calendar, Flag, Tag, Search, X } from 'lucide-react'
 import { Priority } from '@/store/task-store'
 import { format } from 'date-fns'
@@ -102,6 +114,8 @@ export function TaskList() {
   const [editPriority, setEditPriority] = useState<Priority>('NONE')
   const [editLabelIds, setEditLabelIds] = useState<string[]>([])
   const [labelManagerOpen, setLabelManagerOpen] = useState(false)
+  const [shortcutsOpen, setShortcutsOpen] = useState(false)
+  const [deletingTask, setDeletingTask] = useState<Task | null>(null)
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -110,27 +124,6 @@ export function TaskList() {
     })
   )
 
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger if user is typing in an input
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        return
-      }
-
-      // 'a' to add new task
-      if (e.key === 'a' || e.key === 'A') {
-        const addTaskButton = document.querySelector('[data-add-task]') as HTMLButtonElement
-        if (addTaskButton) {
-          addTaskButton.click()
-        }
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [])
-
   // Load labels on mount
   useEffect(() => {
     fetch('/api/labels')
@@ -138,7 +131,6 @@ export function TaskList() {
       .then((data) => setLabels(data))
       .catch((error) => console.error('Failed to fetch labels:', error))
   }, [setLabels])
-
   const openEditDialog = (task: Task) => {
     setEditingTask(task)
     setEditTitle(task.title)
@@ -234,6 +226,143 @@ export function TaskList() {
   const todayCount = tasks.filter(t => t.dueDate && isToday(new Date(t.dueDate)) && !t.completed).length
   const upcomingCount = tasks.filter(t => t.dueDate && isFuture(new Date(t.dueDate)) && !isToday(new Date(t.dueDate)) && !t.completed).length
 
+  const getFocusedTask = (): Task | undefined => {
+    const taskEl = document.activeElement?.closest('[data-task-id]')
+    if (!taskEl) return undefined
+    const taskId = taskEl.getAttribute('data-task-id')
+    return filteredTasks.find(t => t.id === taskId)
+  }
+
+  const shortcuts: KeyboardShortcutMap = {
+    'a': {
+      description: 'Add new task',
+      action: () => {
+        const btn = document.querySelector('[data-add-task]') as HTMLButtonElement
+        btn?.click()
+      },
+    },
+    'j': {
+      description: 'Navigate to next task',
+      action: () => {
+        const allTasks = Array.from(document.querySelectorAll('[data-task-id]'))
+        if (allTasks.length === 0) return
+        const focused = document.activeElement?.closest('[data-task-id]')
+        const idx = focused ? allTasks.indexOf(focused as Element) : -1
+        const next = allTasks[Math.min(idx + 1, allTasks.length - 1)] as HTMLElement
+        next.focus()
+        next.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      },
+    },
+    'k': {
+      description: 'Navigate to previous task',
+      action: () => {
+        const allTasks = Array.from(document.querySelectorAll('[data-task-id]'))
+        if (allTasks.length === 0) return
+        const focused = document.activeElement?.closest('[data-task-id]')
+        const idx = focused ? allTasks.indexOf(focused as Element) : allTasks.length
+        const prev = allTasks[Math.max(idx - 1, 0)] as HTMLElement
+        prev.focus()
+        prev.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      },
+    },
+    ' ': {
+      description: 'Toggle task completion',
+      action: () => {
+        const taskEl = document.activeElement?.closest('[data-task-id]')
+        if (taskEl) {
+          const checkbox = taskEl.querySelector('[role="checkbox"]') as HTMLElement
+          checkbox?.click()
+        }
+      },
+    },
+    'delete': {
+      description: 'Delete selected task',
+      action: () => {
+        const task = getFocusedTask()
+        if (task) setDeletingTask(task)
+      },
+    },
+    'backspace': {
+      description: 'Delete selected task',
+      action: () => {
+        const task = getFocusedTask()
+        if (task) setDeletingTask(task)
+      },
+    },
+    'enter': {
+      description: 'Edit selected task',
+      action: () => {
+        const task = getFocusedTask()
+        if (task) openEditDialog(task)
+      },
+    },
+    'escape': {
+      description: 'Close dialogs / Cancel',
+      action: () => {
+        if (deletingTask) {
+          setDeletingTask(null)
+        } else if (editingTask) {
+          setEditingTask(null)
+        } else if (shortcutsOpen) {
+          setShortcutsOpen(false)
+        } else if (searchQuery) {
+          setSearchQuery('')
+        }
+      },
+    },
+    '/': {
+      description: 'Focus search',
+      action: () => {
+        const input = document.querySelector('[data-search-input]') as HTMLInputElement
+        if (input) {
+          input.focus()
+          input.select()
+        }
+      },
+    },
+    '?': {
+      description: 'Show keyboard shortcuts',
+      action: () => setShortcutsOpen(true),
+    },
+    'g i': {
+      description: 'Go to Inbox',
+      action: () => {
+        const el = document.querySelector('[data-nav="inbox"]') as HTMLElement
+        el?.click()
+      },
+    },
+    'g t': {
+      description: 'Go to Today',
+      action: () => {
+        const el = document.querySelector('[data-nav="today"]') as HTMLElement
+        el?.click()
+      },
+    },
+    'g u': {
+      description: 'Go to Upcoming',
+      action: () => {
+        const el = document.querySelector('[data-nav="upcoming"]') as HTMLElement
+        el?.click()
+      },
+    },
+    'g c': {
+      description: 'Go to Completed',
+      action: () => {
+        const el = document.querySelector('[data-nav="completed"]') as HTMLElement
+        el?.click()
+      },
+    },
+    'g p': {
+      description: 'Go to Projects',
+      action: () => {
+        const el = document.querySelector('[data-nav="projects"]') as HTMLElement
+        el?.click()
+      },
+    },
+  }
+
+  useKeyboardShortcuts(shortcuts)
+
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
 
@@ -276,6 +405,7 @@ export function TaskList() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 pr-9"
+            data-search-input
           />
           {searchQuery && (
             <button
@@ -439,13 +569,62 @@ export function TaskList() {
               <Button variant="outline" onClick={() => setEditingTask(null)}>
                 Cancel
               </Button>
-              <Button onClick={handleSaveEdit} disabled={!editTitle.trim()}>
+              <Button onClick={handleSaveEdit} disabled={!editTitle.trim()} data-save-task>
                 Save changes
               </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Keyboard Delete Confirmation */}
+      <AlertDialog open={!!deletingTask} onOpenChange={(open) => !open && setDeletingTask(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete task?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete &quot;{deletingTask?.title}&quot;. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (!deletingTask) return
+                const taskTitle = deletingTask.title
+                deleteTask(deletingTask.id)
+                setDeletingTask(null)
+                try {
+                  await fetch(`/api/tasks/${deletingTask.id}`, { method: 'DELETE' })
+                  toast({
+                    title: 'Task deleted',
+                    description: `"${taskTitle}" has been removed.`,
+                  })
+                } catch (error) {
+                  console.error('Failed to delete task:', error)
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Keyboard Shortcuts Dialog */}
+      <KeyboardShortcutsHelp open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
+
+      {/* Keyboard Help Button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setShortcutsOpen(true)}
+        className="fixed bottom-4 right-4 z-50 opacity-30 hover:opacity-100 transition-opacity"
+        title="Keyboard shortcuts (?)"
+      >
+        <Keyboard className="h-5 w-5" />
+      </Button>
     </div>
   )
 }

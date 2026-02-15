@@ -193,15 +193,18 @@ export function TaskItem({ task, onEdit }: TaskItemProps) {
       className={cn(
         "group flex items-start gap-3 p-4 rounded-xl transition-all",
         "hover:bg-accent/50",
+        "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1",
         task.completed && "opacity-60"
       )}
+      data-task-id={task.id}
+      tabIndex={0}
     >
       <Checkbox
         checked={task.completed}
         onCheckedChange={handleToggleComplete}
         className="mt-0.5"
       />
-      
+
       <div className="flex-1 min-w-0">
         <p className={cn(
           "text-sm font-medium leading-snug",

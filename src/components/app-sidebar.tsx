@@ -207,6 +207,7 @@ export function AppSidebar({ onNavigate }: SidebarProps) {
             <button
               key={item.id}
               onClick={() => handleNavClick(item.id as typeof currentView)}
+              data-nav={item.id}
               className={cn(
                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
                 "hover:bg-accent",
