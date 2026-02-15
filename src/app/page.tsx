@@ -6,8 +6,8 @@ import { AppSidebar } from '@/components/app-sidebar'
 import { TaskList } from '@/components/tasks/task-list'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
-import { Menu, Sun, Moon, Inbox, Calendar, CalendarDays, CheckCircle2, FolderOpen, TrendingUp, Clock, ListTodo, Plus } from 'lucide-react'
-import { useTheme } from 'next-themes'
+import { Menu, Inbox, Calendar, CalendarDays, CheckCircle2, FolderOpen, TrendingUp, Clock } from 'lucide-react'
+import { ThemeToggle } from '@/components/theme-toggle'
 import { cn } from '@/lib/utils'
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet'
 import { Progress } from '@/components/ui/progress'
@@ -38,7 +38,6 @@ export default function Home() {
     setIsLoading 
   } = useTaskStore()
   
-  const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
 
@@ -162,18 +161,7 @@ export default function Home() {
             </div>
             
             <div className="flex items-center gap-2">
-              {/* Theme Toggle */}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              >
-                {theme === 'dark' ? (
-                  <Sun className="h-5 w-5" />
-                ) : (
-                  <Moon className="h-5 w-5" />
-                )}
-              </Button>
+              <ThemeToggle />
             </div>
           </div>
           
