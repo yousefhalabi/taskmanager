@@ -42,6 +42,8 @@ import {
   useSortable,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { LabelManager } from '@/components/label-manager'
+import { LabelPicker } from '@/components/label-picker'
 
 const priorityColors: Record<Priority, string> = {
   NONE: 'text-muted-foreground',
@@ -91,13 +93,15 @@ function SortableTaskItem({ task, onEdit }: SortableTaskItemProps) {
 }
 
 export function TaskList() {
-  const { tasks, currentView, selectedProjectId, updateTask, deleteTask, setTasks, searchQuery, setSearchQuery, priorityFilter, setPriorityFilter } = useTaskStore()
+  const { tasks, currentView, selectedProjectId, updateTask, deleteTask, setTasks, searchQuery, setSearchQuery, priorityFilter, setPriorityFilter, labelFilter, setLabelFilter, labels, setLabels } = useTaskStore()
   const { toast } = useToast()
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editDescription, setEditDescription] = useState('')
   const [editDueDate, setEditDueDate] = useState<Date | undefined>()
   const [editPriority, setEditPriority] = useState<Priority>('NONE')
+  const [editLabelIds, setEditLabelIds] = useState<string[]>([])
+  const [labelManagerOpen, setLabelManagerOpen] = useState(false)
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -127,12 +131,21 @@ export function TaskList() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
+  // Load labels on mount
+  useEffect(() => {
+    fetch('/api/labels')
+      .then((res) => res.json())
+      .then((data) => setLabels(data))
+      .catch((error) => console.error('Failed to fetch labels:', error))
+  }, [setLabels])
+
   const openEditDialog = (task: Task) => {
     setEditingTask(task)
     setEditTitle(task.title)
     setEditDescription(task.description || '')
     setEditDueDate(task.dueDate ? new Date(task.dueDate) : undefined)
     setEditPriority(task.priority)
+    setEditLabelIds(task.labels.map(label => label.id))
   }
 
   const handleSaveEdit = async () => {
@@ -147,16 +160,13 @@ export function TaskList() {
           description: editDescription,
           dueDate: editDueDate?.toISOString(),
           priority: editPriority,
+          labelIds: editLabelIds,
         }),
       })
 
       if (res.ok) {
-        updateTask(editingTask.id, {
-          title: editTitle,
-          description: editDescription,
-          dueDate: editDueDate?.toISOString(),
-          priority: editPriority,
-        })
+        const updatedTask = await res.json()
+        updateTask(editingTask.id, updatedTask)
         setEditingTask(null)
         toast({
           title: 'Task updated',
@@ -183,6 +193,13 @@ export function TaskList() {
     // Apply priority filter
     if (priorityFilter !== 'ALL') {
       filtered = filtered.filter(task => task.priority === priorityFilter)
+    }
+
+    // Apply label filter
+    if (labelFilter) {
+      filtered = filtered.filter(task =>
+        task.labels.some(label => label.id === labelFilter)
+      )
     }
 
     // Apply view filter
@@ -274,7 +291,22 @@ export function TaskList() {
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
+        <LabelPicker
+          selectedLabelIds={labelFilter ? [labelFilter] : []}
+          onLabelIdsChange={(ids) => setLabelFilter(ids[0] || null)}
+          trigger={
+            <Button variant="outline" size="sm" className="shrink-0">
+              <Tag className={cn("h-4 w-4 mr-2", labelFilter ? 'text-foreground' : 'text-muted-foreground')} />
+              {labelFilter ? labels.find(l => l.id === labelFilter)?.name || 'Labels' : 'Labels'}
+            </Button>
+          }
+        />
+        <Button variant="ghost" size="sm" onClick={() => setLabelManagerOpen(true)}>
+          <Tag className="h-4 w-4" />
+        </Button>
       </div>
+
+      <LabelManager open={labelManagerOpen} onOpenChange={setLabelManagerOpen} />
 
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-1">
@@ -361,7 +393,7 @@ export function TaskList() {
                   />
                 </PopoverContent>
               </Popover>
-              
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm">
@@ -382,6 +414,11 @@ export function TaskList() {
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
+
+              <LabelPicker
+                selectedLabelIds={editLabelIds}
+                onLabelIdsChange={setEditLabelIds}
+              />
             </div>
             <div className="flex justify-end gap-2 pt-4">
               <Button variant="outline" onClick={() => setEditingTask(null)}>
