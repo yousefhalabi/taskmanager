@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   keywords: ["Task Management", "Next.js", "TypeScript", "Tailwind CSS", "shadcn/ui", "Productivity"],
   authors: [{ name: "TaskFlow Team" }],
   icons: {
-    icon: "/favicon.ico",
+    icon: "/logo.svg",
   },
   openGraph: {
     title: "TaskFlow",
