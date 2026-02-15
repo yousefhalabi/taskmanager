@@ -21,6 +21,7 @@ import {
 import { Calendar as CalendarComponent } from '@/components/ui/calendar'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
+import { LabelPicker } from '@/components/label-picker'
 
 interface TaskCreateProps {
   projectId?: string
@@ -42,6 +43,7 @@ export function TaskCreate({ projectId }: TaskCreateProps) {
   const [priority, setPriority] = useState<Priority>('NONE')
   const [isLoading, setIsLoading] = useState(false)
   const [datePickerOpen, setDatePickerOpen] = useState(false)
+  const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>([])
 
   const { addTask, projects, selectedProjectId } = useTaskStore()
   const { toast } = useToast()
@@ -62,6 +64,7 @@ export function TaskCreate({ projectId }: TaskCreateProps) {
           dueDate: dueDate?.toISOString(),
           priority,
           projectId: currentProjectId,
+          labelIds: selectedLabelIds.length > 0 ? selectedLabelIds : undefined,
         }),
       })
       
@@ -86,6 +89,7 @@ export function TaskCreate({ projectId }: TaskCreateProps) {
     setDescription('')
     setDueDate(undefined)
     setPriority('NONE')
+    setSelectedLabelIds([])
     setIsOpen(false)
   }
 
@@ -174,7 +178,13 @@ export function TaskCreate({ projectId }: TaskCreateProps) {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-          
+
+          {/* Labels */}
+          <LabelPicker
+            selectedLabelIds={selectedLabelIds}
+            onLabelIdsChange={setSelectedLabelIds}
+          />
+
           {/* Clear Due Date */}
           {dueDate && (
             <Button
