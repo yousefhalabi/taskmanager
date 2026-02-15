@@ -105,7 +105,7 @@ function SortableTaskItem({ task, onEdit }: SortableTaskItemProps) {
 }
 
 export function TaskList() {
-  const { tasks, currentView, selectedProjectId, updateTask, deleteTask, setTasks, searchQuery, setSearchQuery, priorityFilter, setPriorityFilter, labelFilter, setLabelFilter, labels, setLabels } = useTaskStore()
+  const { tasks, currentView, selectedProjectId, updateTask, deleteTask, setTasks, searchQuery, setSearchQuery, priorityFilter, setPriorityFilter, labelFilter, setLabelFilter, labels, setLabels, projects } = useTaskStore()
   const { toast } = useToast()
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [editTitle, setEditTitle] = useState('')
@@ -113,6 +113,7 @@ export function TaskList() {
   const [editDueDate, setEditDueDate] = useState<Date | undefined>()
   const [editPriority, setEditPriority] = useState<Priority>('NONE')
   const [editLabelIds, setEditLabelIds] = useState<string[]>([])
+  const [editProjectId, setEditProjectId] = useState<string | null>(null)
   const [labelManagerOpen, setLabelManagerOpen] = useState(false)
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const [deletingTask, setDeletingTask] = useState<Task | null>(null)
@@ -129,7 +130,14 @@ export function TaskList() {
     fetch('/api/labels')
       .then((res) => res.json())
       .then((data) => setLabels(data))
-      .catch((error) => console.error('Failed to fetch labels:', error))
+      .catch((error) => {
+        console.error('Failed to fetch labels:', error)
+        toast({
+          title: 'Error',
+          description: 'Failed to load labels.',
+          variant: 'destructive',
+        })
+      })
   }, [setLabels])
   const openEditDialog = (task: Task) => {
     setEditingTask(task)
@@ -138,6 +146,7 @@ export function TaskList() {
     setEditDueDate(task.dueDate ? new Date(task.dueDate) : undefined)
     setEditPriority(task.priority)
     setEditLabelIds(task.labels.map(label => label.id))
+    setEditProjectId(task.projectId || null)
   }
 
   const handleSaveEdit = async () => {
@@ -153,6 +162,7 @@ export function TaskList() {
           dueDate: editDueDate?.toISOString(),
           priority: editPriority,
           labelIds: editLabelIds,
+          projectId: editProjectId,
         }),
       })
 
@@ -167,6 +177,11 @@ export function TaskList() {
       }
     } catch (error) {
       console.error('Failed to update task:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to update task. Please try again.',
+        variant: 'destructive',
+      })
     }
   }
 
@@ -390,6 +405,11 @@ export function TaskList() {
         )
       } catch (error) {
         console.error('Failed to update task order:', error)
+        toast({
+          title: 'Error',
+          description: 'Failed to save task order. Please try again.',
+          variant: 'destructive',
+        })
       }
     }
   }
@@ -564,6 +584,37 @@ export function TaskList() {
                 selectedLabelIds={editLabelIds}
                 onLabelIdsChange={setEditLabelIds}
               />
+
+              {/* Project */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    {editProjectId ? (
+                      <>
+                        <FolderOpen className="h-4 w-4 mr-2" style={{ color: projects.find(p => p.id === editProjectId)?.color }} />
+                        {projects.find(p => p.id === editProjectId)?.name || 'Project'}
+                      </>
+                    ) : (
+                      <>
+                        <Inbox className="h-4 w-4 mr-2 text-muted-foreground" />
+                        Inbox
+                      </>
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => setEditProjectId(null)}>
+                    <Inbox className="h-4 w-4 mr-2 text-muted-foreground" />
+                    Inbox (no project)
+                  </DropdownMenuItem>
+                  {projects.map((project) => (
+                    <DropdownMenuItem key={project.id} onClick={() => setEditProjectId(project.id)}>
+                      <FolderOpen className="h-4 w-4 mr-2" style={{ color: project.color }} />
+                      {project.name}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
             <div className="flex justify-end gap-2 pt-4">
               <Button variant="outline" onClick={() => setEditingTask(null)}>
@@ -602,6 +653,11 @@ export function TaskList() {
                   })
                 } catch (error) {
                   console.error('Failed to delete task:', error)
+                  toast({
+                    title: 'Error',
+                    description: 'Failed to delete task. Please try again.',
+                    variant: 'destructive',
+                  })
                 }
               }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
