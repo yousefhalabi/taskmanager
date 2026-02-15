@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { format, isToday, isTomorrow, isPast, addDays } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -61,28 +61,7 @@ export function TaskItem({ task, onEdit }: TaskItemProps) {
   const [showCalendar, setShowCalendar] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [addDatePickerOpen, setAddDatePickerOpen] = useState(false)
-  const [taskSubtasks, setTaskSubtasks] = useState<Subtask[]>([])
-
-  // Load subtasks for this task
-  useEffect(() => {
-    const loadSubtasks = async () => {
-      try {
-        const res = await fetch(`/api/tasks/${task.id}/subtasks`)
-        if (res.ok) {
-          const data = await res.json()
-          setTaskSubtasks(data)
-        }
-      } catch (error) {
-        console.error('Failed to load subtasks:', error)
-      }
-    }
-    loadSubtasks()
-  }, [task.id])
-
-  // Update local subtasks when store changes
-  useEffect(() => {
-    setTaskSubtasks(subtasks.filter(s => s.taskId === task.id))
-  }, [subtasks, task.id])
+  const taskSubtasks = useMemo(() => subtasks.filter(s => s.taskId === task.id), [subtasks, task.id])
 
   const handleToggleComplete = async () => {
     const newCompletedState = !task.completed
