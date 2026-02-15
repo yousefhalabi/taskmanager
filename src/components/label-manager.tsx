@@ -66,6 +66,7 @@ export function LabelManager({ open, onOpenChange }: LabelManagerProps) {
       }
     } catch (error) {
       console.error('Failed to create label:', error)
+      toast({ title: 'Error', description: 'Failed to create label. Please try again.', variant: 'destructive' })
     }
   }
 
@@ -92,6 +93,7 @@ export function LabelManager({ open, onOpenChange }: LabelManagerProps) {
       }
     } catch (error) {
       console.error('Failed to update label:', error)
+      toast({ title: 'Error', description: 'Failed to update label. Please try again.', variant: 'destructive' })
     }
   }
 
@@ -105,6 +107,7 @@ export function LabelManager({ open, onOpenChange }: LabelManagerProps) {
       })
     } catch (error) {
       console.error('Failed to delete label:', error)
+      toast({ title: 'Error', description: 'Failed to delete label. Please try again.', variant: 'destructive' })
     }
   }
 

@@ -129,7 +129,7 @@ export function TaskList() {
     fetch('/api/labels')
       .then((res) => res.json())
       .then((data) => setLabels(data))
-      .catch((error) => console.error('Failed to fetch labels:', error))
+      .catch((error) => { console.error('Failed to fetch labels:', error); toast({ title: 'Error', description: 'Failed to load labels.', variant: 'destructive' }) })
   }, [setLabels])
   const openEditDialog = (task: Task) => {
     setEditingTask(task)
@@ -167,6 +167,7 @@ export function TaskList() {
       }
     } catch (error) {
       console.error('Failed to update task:', error)
+      toast({ title: 'Error', description: 'Failed to update task. Please try again.', variant: 'destructive' })
     }
   }
 
@@ -390,6 +391,7 @@ export function TaskList() {
         )
       } catch (error) {
         console.error('Failed to update task order:', error)
+        toast({ title: 'Error', description: 'Failed to save task order. Please try again.', variant: 'destructive' })
       }
     }
   }
@@ -602,6 +604,7 @@ export function TaskList() {
                   })
                 } catch (error) {
                   console.error('Failed to delete task:', error)
+                  toast({ title: 'Error', description: 'Failed to delete task. Please try again.', variant: 'destructive' })
                 }
               }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
