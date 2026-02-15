@@ -217,19 +217,34 @@ export function TaskList() {
   const todayCount = tasks.filter(t => t.dueDate && isToday(new Date(t.dueDate)) && !t.completed).length
   const upcomingCount = tasks.filter(t => t.dueDate && isFuture(new Date(t.dueDate)) && !isToday(new Date(t.dueDate)) && !t.completed).length
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
 
     if (over && active.id !== over.id) {
       const oldIndex = filteredTasks.findIndex(t => t.id === active.id)
       const newIndex = filteredTasks.findIndex(t => t.id === over.id)
-      
+
       const newTasks = arrayMove(filteredTasks, oldIndex, newIndex)
-      
+
       // Update order in the store
       newTasks.forEach((task, index) => {
         updateTask(task.id, { order: index })
       })
+
+      // Persist order to database
+      try {
+        await Promise.all(
+          newTasks.map((task, index) =>
+            fetch(`/api/tasks/${task.id}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ order: index }),
+            })
+          )
+        )
+      } catch (error) {
+        console.error('Failed to update task order:', error)
+      }
     }
   }
 
