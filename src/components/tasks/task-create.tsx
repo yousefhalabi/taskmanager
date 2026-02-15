@@ -149,7 +149,6 @@ export function TaskCreate({ projectId }: TaskCreateProps) {
                   setDueDate(date)
                   setDatePickerOpen(false)
                 }}
-                initialFocus
               />
             </PopoverContent>
           </Popover>
