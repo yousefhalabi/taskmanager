@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useTaskStore, Task } from '@/store/task-store'
 import { TaskItem } from './task-item'
 import { TaskCreate } from './task-create'
+import { Comments } from '@/components/comments'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { isToday, isFuture, isPast, startOfDay, addDays } from 'date-fns'
 import { cn } from '@/lib/utils'
@@ -390,6 +391,11 @@ export function TaskList() {
               <Button onClick={handleSaveEdit} disabled={!editTitle.trim()}>
                 Save changes
               </Button>
+            </div>
+
+            {/* Comments Section */}
+            <div className="border-t pt-4">
+              <Comments task={editingTask} />
             </div>
           </div>
         </DialogContent>

@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, Flag, MoreHorizontal, Edit3, Trash2, Tag } from 'lucide-react'
+import { Calendar, Flag, MoreHorizontal, Edit3, Trash2, Tag, MessageSquare } from 'lucide-react'
 import { Task, Priority } from '@/store/task-store'
 import {
   DropdownMenu,
@@ -203,7 +203,18 @@ export function TaskItem({ task, onEdit }: TaskItemProps) {
               {label.name}
             </Badge>
           ))}
-          
+
+          {/* Comments Count */}
+          {task.comments && task.comments.length > 0 && (
+            <div
+              className="flex items-center gap-1 text-xs px-2 py-1 rounded-md text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              onClick={() => onEdit?.(task)}
+            >
+              <MessageSquare className="h-3 w-3" />
+              <span>{task.comments.length}</span>
+            </div>
+          )}
+
           {/* Priority */}
           {task.priority !== 'NONE' && (
             <DropdownMenu>

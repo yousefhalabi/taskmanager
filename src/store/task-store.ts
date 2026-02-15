@@ -8,6 +8,14 @@ export interface Label {
   color: string
 }
 
+export interface Comment {
+  id: string
+  content: string
+  taskId: string
+  createdAt: string
+  updatedAt: string
+}
+
 export interface Task {
   id: string
   title: string
@@ -18,6 +26,7 @@ export interface Task {
   order: number
   projectId?: string
   labels: Label[]
+  comments: Comment[]
   createdAt: string
   updatedAt: string
 }
@@ -53,6 +62,7 @@ interface TaskState {
   updateTask: (id: string, task: Partial<Task>) => void
   deleteTask: (id: string) => void
   toggleTaskComplete: (id: string) => void
+  updateTaskComments: (id: string, comments: Comment[]) => void
 
   setProjects: (projects: Project[]) => void
   addProject: (project: Project) => void
@@ -67,6 +77,7 @@ interface TaskState {
   setIsLoading: (loading: boolean) => void
   setSearchQuery: (query: string) => void
   setPriorityFilter: (priority: Priority | 'ALL') => void
+  updateTaskComments: (id: string, comments: Comment[]) => void
 }
 
 export const useTaskStore = create<TaskState>((set) => ({
@@ -113,4 +124,9 @@ export const useTaskStore = create<TaskState>((set) => ({
   setIsLoading: (loading) => set({ isLoading: loading }),
   setSearchQuery: (query) => set({ searchQuery: query }),
   setPriorityFilter: (priority) => set({ priorityFilter: priority }),
+  updateTaskComments: (id, comments) => set((state) => ({
+    tasks: state.tasks.map((task) =>
+      task.id === id ? { ...task, comments } : task
+    ),
+  })),
 }))
