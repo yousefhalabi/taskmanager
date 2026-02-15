@@ -30,7 +30,7 @@ export function ExportDialog({ open, onOpenChange }: ExportDialogProps) {
   const { projects } = useTaskStore()
   const { toast } = useToast()
 
-  const [format, setFormat] = useState<'json' | 'csv' | 'markdown'>('json')
+  const [exportFormat, setExportFormat] = useState<'json' | 'csv' | 'markdown'>('json')
   const [selectedProject, setSelectedProject] = useState<string>('all')
   const [completedOnly, setCompletedOnly] = useState(false)
   const [startDate, setStartDate] = useState<Date | undefined>()
@@ -41,7 +41,7 @@ export function ExportDialog({ open, onOpenChange }: ExportDialogProps) {
     setIsExporting(true)
 
     try {
-      const params = new URLSearchParams({ format })
+      const params = new URLSearchParams({ format: exportFormat })
 
       if (selectedProject !== 'all') {
         params.append('projectId', selectedProject)
@@ -71,8 +71,8 @@ export function ExportDialog({ open, onOpenChange }: ExportDialogProps) {
       a.href = url
 
       const date = format(new Date(), 'yyyy-MM-dd')
-      const extension = format === 'json' ? 'json' : format === 'csv' ? 'csv' : 'md'
-      const filename = `taskflow-${format}-${date}.${extension}`
+      const extension = exportFormat === 'json' ? 'json' : exportFormat === 'csv' ? 'csv' : 'md'
+      const filename = `taskflow-${exportFormat}-${date}.${extension}`
 
       a.download = filename
       document.body.appendChild(a)
@@ -82,7 +82,7 @@ export function ExportDialog({ open, onOpenChange }: ExportDialogProps) {
 
       toast({
         title: 'Export successful',
-        description: `Your data has been exported as ${format.toUpperCase()}.`,
+        description: `Your data has been exported as ${exportFormat.toUpperCase()}.`,
       })
 
       onOpenChange(false)
@@ -114,10 +114,10 @@ export function ExportDialog({ open, onOpenChange }: ExportDialogProps) {
             <Label>Export Format</Label>
             <div className="grid grid-cols-3 gap-3">
               <button
-                onClick={() => setFormat('json')}
+                onClick={() => setExportFormat('json')}
                 className={`
                   flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all
-                  ${format === 'json' ? 'border-primary bg-primary/5' : 'border-muted hover:border-muted-foreground/50'}
+                  ${exportFormat === 'json' ? 'border-primary bg-primary/5' : 'border-muted hover:border-muted-foreground/50'}
                 `}
               >
                 <FileJson className="h-6 w-6" />
@@ -126,10 +126,10 @@ export function ExportDialog({ open, onOpenChange }: ExportDialogProps) {
               </button>
 
               <button
-                onClick={() => setFormat('csv')}
+                onClick={() => setExportFormat('csv')}
                 className={`
                   flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all
-                  ${format === 'csv' ? 'border-primary bg-primary/5' : 'border-muted hover:border-muted-foreground/50'}
+                  ${exportFormat === 'csv' ? 'border-primary bg-primary/5' : 'border-muted hover:border-muted-foreground/50'}
                 `}
               >
                 <FileSpreadsheet className="h-6 w-6" />
@@ -138,10 +138,10 @@ export function ExportDialog({ open, onOpenChange }: ExportDialogProps) {
               </button>
 
               <button
-                onClick={() => setFormat('markdown')}
+                onClick={() => setExportFormat('markdown')}
                 className={`
                   flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all
-                  ${format === 'markdown' ? 'border-primary bg-primary/5' : 'border-muted hover:border-muted-foreground/50'}
+                  ${exportFormat === 'markdown' ? 'border-primary bg-primary/5' : 'border-muted hover:border-muted-foreground/50'}
                 `}
               >
                 <FileText className="h-6 w-6" />
@@ -245,17 +245,17 @@ export function ExportDialog({ open, onOpenChange }: ExportDialogProps) {
 
           {/* Format Info */}
           <div className="p-3 bg-muted/50 rounded-lg text-sm">
-            {format === 'json' && (
+            {exportFormat === 'json' && (
               <p className="text-muted-foreground">
                 JSON exports include tasks, projects, labels, and subtasks. This format is best for backups and full restores.
               </p>
             )}
-            {format === 'csv' && (
+            {exportFormat === 'csv' && (
               <p className="text-muted-foreground">
                 CSV exports tasks only, suitable for spreadsheets and other apps. Includes title, description, priority, due date, status, project, and labels.
               </p>
             )}
-            {format === 'markdown' && (
+            {exportFormat === 'markdown' && (
               <p className="text-muted-foreground">
                 Markdown exports tasks formatted as a checklist, grouped by project. Great for documentation and sharing.
               </p>

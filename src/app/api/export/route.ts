@@ -5,7 +5,7 @@ import { format } from 'date-fns'
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
-    const format = searchParams.get('format') || 'json'
+    const exportFormat = searchParams.get('format') || 'json'
     const projectId = searchParams.get('projectId')
     const completed = searchParams.get('completed')
     const startDate = searchParams.get('startDate')
@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
       projectId: label.projectId || ''
     }))
 
-    if (format === 'json') {
+    if (exportFormat === 'json') {
       // JSON export
       const jsonData = {
         exportDate,
@@ -111,7 +111,7 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    if (format === 'csv') {
+    if (exportFormat === 'csv') {
       // CSV export (tasks only)
       const csvHeader = 'Title,Description,Priority,Due Date,Status,Project,Labels,Created Date'
       const csvRows = exportTasks.map(task => {
@@ -136,7 +136,7 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    if (format === 'markdown') {
+    if (exportFormat === 'markdown') {
       // Markdown export
       let markdown = `# TaskFlow Export\n\n`
       markdown += `Export Date: ${format(exportDate, 'yyyy-MM-dd HH:mm:ss')}\n\n`

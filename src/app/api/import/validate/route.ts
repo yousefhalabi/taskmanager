@@ -160,15 +160,14 @@ function validateCsv(content: string): Promise<ValidationResponse> {
           if (!fields.includes('title')) {
             errors.push('CSV missing required "Title" column')
           }
+          if (!fields.includes('project')) {
+            warnings.push('No "Project" column found. All tasks will be imported to inbox.')
+          }
         }
 
         // Warnings
         if (results.data.length > 1000) {
           warnings.push(`Large dataset: ${results.data.length} rows may take some time to import`)
-        }
-
-        if (!fields.includes('project')) {
-          warnings.push('No "Project" column found. All tasks will be imported to inbox.')
         }
 
         resolve({
@@ -193,6 +192,3 @@ function validateCsv(content: string): Promise<ValidationResponse> {
     })
   })
 }
-
-// Get fields for type checking
-let fields: string[] = []

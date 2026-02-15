@@ -199,7 +199,7 @@ async function importFromJson(content: string, duplicateHandling: string) {
             title: task.title,
             description: task.description || null,
             completed: task.completed || false,
-            priority: (task.priority as any) || 'NONE',
+            priority: mapPriority(task.priority || ''),
             dueDate: task.dueDate ? new Date(task.dueDate) : null,
             projectId: newProjectId || null,
             order: await getNextOrder(newProjectId),
@@ -348,12 +348,19 @@ async function importFromCsv(content: string, duplicateHandling: string) {
   })
 }
 
-function mapPriority(priority: string): any {
-  const p = (priority || '').toLowerCase()
-  if (p.includes('urgent')) return 'URGENT'
-  if (p.includes('high')) return 'HIGH'
-  if (p.includes('medium') || p.includes('med')) return 'MEDIUM'
-  if (p.includes('low')) return 'LOW'
+function mapPriority(priority: string): 'NONE' | 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT' {
+  const p = (priority || '').toUpperCase()
+  if (p === 'URGENT') return 'URGENT'
+  if (p === 'HIGH') return 'HIGH'
+  if (p === 'MEDIUM') return 'MEDIUM'
+  if (p === 'LOW') return 'LOW'
+  if (p === 'NONE') return 'NONE'
+  // Fuzzy matching for CSV imports with non-standard values
+  const lower = p.toLowerCase()
+  if (lower.includes('urgent')) return 'URGENT'
+  if (lower.includes('high')) return 'HIGH'
+  if (lower.includes('medium') || lower.includes('med')) return 'MEDIUM'
+  if (lower.includes('low')) return 'LOW'
   return 'NONE'
 }
 
