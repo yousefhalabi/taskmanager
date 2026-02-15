@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Label as FormLabel } from '@/components/ui/label'
 import { Plus, X, Edit3, Trash2, Tag } from 'lucide-react'
 import { useTaskStore, Label } from '@/store/task-store'
 import { useToast } from '@/hooks/use-toast'
@@ -124,7 +124,7 @@ export function LabelManager({ open, onOpenChange }: LabelManagerProps) {
         <div className="space-y-6 py-4">
           {/* Create New Label */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Create New Label</Label>
+            <FormLabel className="text-sm font-medium">Create New Label</FormLabel>
             <div className="flex gap-2">
               <Input
                 placeholder="Label name..."
@@ -153,7 +153,7 @@ export function LabelManager({ open, onOpenChange }: LabelManagerProps) {
           {/* Existing Labels */}
           {labels.length > 0 && (
             <div className="space-y-3">
-              <Label className="text-sm font-medium">Existing Labels</Label>
+              <FormLabel className="text-sm font-medium">Existing Labels</FormLabel>
               <div className="space-y-2">
                 {labels.map((label) => (
                   <div
@@ -203,7 +203,7 @@ export function LabelManager({ open, onOpenChange }: LabelManagerProps) {
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-label-name">Name</Label>
+                <FormLabel htmlFor="edit-label-name">Name</FormLabel>
                 <Input
                   id="edit-label-name"
                   value={editName}
@@ -211,7 +211,7 @@ export function LabelManager({ open, onOpenChange }: LabelManagerProps) {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Color</Label>
+                <FormLabel>Color</FormLabel>
                 <div className="flex gap-2 flex-wrap">
                   {PRESET_COLORS.map((color) => (
                     <button
