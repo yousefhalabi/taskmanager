@@ -6,6 +6,7 @@ export interface Label {
   id: string
   name: string
   color: string
+  projectId?: string | null
 }
 
 export interface Task {
@@ -46,6 +47,7 @@ interface TaskState {
   isLoading: boolean
   searchQuery: string
   priorityFilter: Priority | 'ALL'
+  labelFilter: string | null
 
   // Actions
   setTasks: (tasks: Task[]) => void
@@ -60,6 +62,9 @@ interface TaskState {
   deleteProject: (id: string) => void
 
   setLabels: (labels: Label[]) => void
+  addLabel: (label: Label) => void
+  updateLabel: (id: string, label: Partial<Label>) => void
+  deleteLabel: (id: string) => void
 
   setCurrentView: (view: 'inbox' | 'today' | 'upcoming' | 'completed' | 'project') => void
   setSelectedProjectId: (id: string | null) => void
@@ -67,6 +72,7 @@ interface TaskState {
   setIsLoading: (loading: boolean) => void
   setSearchQuery: (query: string) => void
   setPriorityFilter: (priority: Priority | 'ALL') => void
+  setLabelFilter: (labelId: string | null) => void
 }
 
 export const useTaskStore = create<TaskState>((set) => ({
@@ -79,6 +85,7 @@ export const useTaskStore = create<TaskState>((set) => ({
   isLoading: false,
   searchQuery: '',
   priorityFilter: 'ALL',
+  labelFilter: null,
 
   setTasks: (tasks) => set({ tasks }),
   addTask: (task) => set((state) => ({ tasks: [...state.tasks, task] })),
@@ -106,6 +113,15 @@ export const useTaskStore = create<TaskState>((set) => ({
   })),
 
   setLabels: (labels) => set({ labels }),
+  addLabel: (label) => set((state) => ({ labels: [...state.labels, label] })),
+  updateLabel: (id, updatedLabel) => set((state) => ({
+    labels: state.labels.map((label) =>
+      label.id === id ? { ...label, ...updatedLabel } : label
+    ),
+  })),
+  deleteLabel: (id) => set((state) => ({
+    labels: state.labels.filter((label) => label.id !== id),
+  })),
 
   setCurrentView: (view) => set({ currentView: view }),
   setSelectedProjectId: (id) => set({ selectedProjectId: id }),
@@ -113,4 +129,5 @@ export const useTaskStore = create<TaskState>((set) => ({
   setIsLoading: (loading) => set({ isLoading: loading }),
   setSearchQuery: (query) => set({ searchQuery: query }),
   setPriorityFilter: (priority) => set({ priorityFilter: priority }),
+  setLabelFilter: (labelId) => set({ labelFilter: labelId }),
 }))
