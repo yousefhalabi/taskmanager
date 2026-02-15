@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Keyboard, X, Plus, Search, Circle, CheckCircle2, CalendarDays, Calendar, FolderOpen, ArrowUp, ArrowDown, ArrowRight, Inbox } from 'lucide-react'
+import { Keyboard, X, Plus, Search, Circle, CheckCircle2, CalendarDays, Calendar, FolderOpen, ArrowUp, ArrowDown, ArrowRight, Inbox, Command } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const shortcuts = [
@@ -36,6 +36,7 @@ const shortcuts = [
   {
     category: 'View Switch',
     items: [
+      { key: 'Ctrl+K', description: 'Open command palette', icon: Command },
       { key: '/', description: 'Focus search input', icon: Search },
       { key: 'Esc', description: 'Clear search', icon: ArrowRight },
     ],

@@ -5,6 +5,7 @@ import { useTaskStore } from '@/store/task-store'
 import { AppSidebar } from '@/components/app-sidebar'
 import { TaskList } from '@/components/tasks/task-list'
 import { Footer } from '@/components/footer'
+import { CommandPalette } from '@/components/command-palette'
 import { Button } from '@/components/ui/button'
 import { Menu, Inbox, Calendar, CalendarDays, CheckCircle2, FolderOpen, TrendingUp, Clock } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme-toggle'
@@ -40,10 +41,23 @@ export default function Home() {
   
   const [mounted, setMounted] = useState(false)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
 
   useEffect(() => {
     setMounted(true)
     fetchData()
+  }, [])
+
+  // Global Cmd+K / Ctrl+K handler
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        setCommandPaletteOpen((prev) => !prev)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
   const fetchData = async () => {
@@ -234,6 +248,9 @@ export default function Home() {
         {/* Footer */}
         <Footer />
       </div>
+
+      {/* Command Palette */}
+      <CommandPalette open={commandPaletteOpen} onOpenChange={setCommandPaletteOpen} />
     </div>
   )
 }
