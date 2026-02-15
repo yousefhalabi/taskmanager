@@ -1,0 +1,6 @@
+[    8245ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=2-r2V8PSwTYlS6wJ24pSC' failed:  @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10878
+[    9247ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=2-r2V8PSwTYlS6wJ24pSC' failed:  @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10878
+[   10248ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=2-r2V8PSwTYlS6wJ24pSC' failed:  @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10878
+[   11249ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=2-r2V8PSwTYlS6wJ24pSC' failed:  @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10878
+[   12250ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=2-r2V8PSwTYlS6wJ24pSC' failed:  @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10878
+[   17252ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/webpack-hmr?id=2-r2V8PSwTYlS6wJ24pSC' failed:  @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_17643121._.js:10878
